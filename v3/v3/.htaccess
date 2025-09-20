@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Allow existing files or directories to be served as-is
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route /v1 to index.php (case-insensitive)
+RewriteRule ^v1(/.*)?$ index.php [L,NC]
+
+# Route /v2 to index.php (case-insensitive)
+RewriteRule ^v2(/.*)?$ index.php [L,NC]
+
+# Route /v3 to index.php (case-insensitive)
+RewriteRule ^v3(/.*)?$ index.php [L,NC]

@@ -1,0 +1,8 @@
+RewriteEngine On
+
+# Redirect /V1, /V2, /V3 (any case) to lowercase versions
+RewriteRule ^v1(/.*)?$ v1/ [NC,L]
+RewriteRule ^v2(/.*)?$ v2/ [NC,L]
+RewriteRule ^v3(/.*)?$ v3/ [NC,L]
+RewriteRule ^v4(/.*)?$ v4/ [NC,L]
+RewriteRule ^v5(/.*)?$ v5/ [NC,L]

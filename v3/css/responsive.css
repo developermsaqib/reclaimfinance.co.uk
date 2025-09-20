@@ -1,0 +1,935 @@
+/* Extra small devices (phones, 576px and down) */
+@media (max-width: 576px) {
+    /* Navbar */
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    .finance {
+        font-size: 0.7rem;
+    }
+    .navbar-nav {
+        text-align: center;
+    }
+    .nav-image {
+        height: 25px !important;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        min-height: auto;
+        padding: 40px 0;
+    }
+    .hero-section h1 {
+        font-size: 1.5rem !important;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .layoutt {
+        text-align: center;
+        padding-bottom: 20px;
+    }
+    .card {
+        height: auto;
+        margin: 20px auto;
+        padding: 15px;
+        width: 100%;
+    }
+     
+    .card h2 {
+        font-size: 1.4rem;
+    }
+
+    /* FCA Update Section */
+    .fca-update h2 {
+        font-size: 1.5rem;
+    }
+    .fca-update p {
+        font-size: 0.9rem;
+        padding: 0 15px;
+    }
+    .exclamation-icon {
+        width: 50px;
+        height: 50px;
+        bottom: -15px;
+    }
+
+    /* About Section */
+    .about-heading {
+        font-size: 2rem !important;
+        text-align: center;
+    }
+    .about-us-section .paragraph {
+        font-size: 1rem;
+        text-align: left;
+    }
+    .content-left {
+        padding: 15px;
+    }
+
+    /* Important Info Section */
+    .important-info-section {
+        padding: 30px 15px;
+    }
+    .important-info-section h2 {
+        font-size: 1.5rem;
+    }
+    .important-info-section .paragraph {
+        font-size: 0.9rem;
+    }
+
+    /* Fair Compensation Section */
+    .fair-compensation-title {
+        font-size: 1.8rem;
+    }
+    .compensation-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px;
+        gap: 15px;
+    }
+    .compensation-card img {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto;
+    }
+    .compensation-card h3 {
+        font-size: 1.2rem;
+    }
+    .compensation-card p {
+        font-size: 0.9rem;
+    }
+
+    /* Check Vehicle CTA Section */
+    .check-vehicle-cta-section h2 {
+        font-size: 1.5rem !important;
+        text-align: center;
+    }
+    .check-vehicle-cta-section .btn {
+        width: 100%;
+        margin-top: 15px;
+    }
+    .check-vehicle-cta-section img {
+        max-width: 200px;
+        margin: 20px auto;
+    }
+
+    /* FAQ Section */
+    .faq-section {
+        padding: 2rem 0;
+    }
+
+    .faq-title {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .faq-title br {
+        display: none;
+    }
+
+    .accordion-button {
+        font-size: 0.9rem;
+        padding: 1rem 3rem 1rem 1rem !important;
+        min-height: 56px;
+    }
+
+    .accordion-button::before {
+        font-size: 20px;
+        padding: 0 12px;
+        min-width: 40px;
+    }
+
+    .accordion-body {
+        padding: 1rem;
+        font-size: 0.875rem;
+    }
+
+    .faq-section .image {
+        max-width: 100%;
+        margin-top: 2rem;
+        height: auto;
+        max-height: 300px;
+    }
+
+    .faq-section .col-md-6 {
+        padding: 0 0.5rem;
+    }
+
+    /* Latest Claims Section */
+    .latest-claims-title {
+        font-size: 1.5rem;
+    }
+    .latest-claims-section .card {
+        margin-bottom: 20px;
+    }
+    .latest-claims-section .card-title {
+        font-size: 1rem;
+    }
+    .latest-claims-section .btn {
+        font-size: 0.9rem;
+    }
+
+    /* Team Section */
+    .team-title {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+    .team-section p {
+        font-size: 1rem;
+        text-align: center;
+    }
+    .team-section .img-fluid {
+        max-width: 100%;
+        margin: 20px auto;
+    }
+
+    /* Fairness Section */
+    .fairness-title {
+        font-size: 1.8rem;
+        text-align: center;
+    }
+    .fairness-section p {
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    /* Simple Claim Section */
+    .simple-claim-section {
+        min-height: 400px;
+    }
+    .simple-claim-section h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Fees Section */
+    .fees-section {
+        padding: 15px;
+    }
+    .fees-section .fw-bold {
+        font-size: 1.2rem;
+    }
+    .fees-section div:not(.table-wrapper) {
+        font-size: 0.85rem;
+    }
+    .table-fees {
+        font-size: 0.8rem;
+    }
+
+    /* Footer */
+    .footer-brand h4 {
+        font-size: 1.5rem;
+    }
+    .footer-links {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Content spacing */
+    .container.my-5 {
+        padding: 0 10px;
+    }
+
+    /* Main heading */
+    h2.fw-bold {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mb-2 {
+        font-size: 0.9rem;
+    }
+
+    /* Content text */
+    .content {
+        font-size: 0.9rem;
+    }
+
+    .content p {
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+
+    .content ul li {
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+
+    /* Tables */
+    .table-wrapper {
+        margin: 0.5rem -15px;
+        width: calc(100% + 30px);
+    }
+
+    .table-term {
+        margin: 0;
+    }
+
+    .table-term th,
+    .table-term td {
+        white-space: nowrap;
+    }
+
+    /* Links */
+    .content a {
+        word-break: break-all;
+    }
+
+    /* Images */
+    .img-fluid {
+        margin: 1.5rem 0;
+        max-width: 100%;
+        height: auto;
+    }
+
+    /* Lists */
+    ul, ol {
+        padding-left: 1.2rem;
+    }
+
+    /* Section spacing */
+    .mt-5 {
+        margin-top: 2rem !important;
+    }
+
+    .mb-4 {
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Cookie Policy Page Responsive Styles */
+    .cookie-policy-section {
+        padding: 2rem 0;
+    }
+
+    .cookie-policy-section .container {
+        padding: 0 15px;
+    }
+
+    .cookie-policy-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .cookie-policy-section h5,
+    .cookie-policy-section h6 {
+        font-size: 1rem;
+    }
+
+    .cookie-policy-section p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .cookie-policy-section ul {
+        padding-left: 1.2rem;
+    }
+
+    .cookie-policy-section ul li {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .cookie-policy-section a {
+        word-break: break-word;
+        display: inline-block;
+    }
+
+    /* Complaints Policy Page Responsive Styles */
+    .contact-header {
+        min-height: 200px;
+        padding: 2rem 1rem;
+    }
+
+    .contact-header h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .contact-header p {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    /* Content sections */
+    .complaint-section h2 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .complaint-section h3 {
+        font-size: 1.2rem;
+    }
+
+    .complaint-section h4 {
+        font-size: 1.1rem;
+    }
+
+    .complaint-section p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        text-align: left !important;
+    }
+
+    .complaint-section ul,
+    .complaint-section ol {
+        padding-left: 1rem;
+    }
+
+    .complaint-section li {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+
+    /* Images */
+    .complaint-section .img-fluid {
+        max-width: 100%;
+        margin: 1.5rem auto;
+        height: auto;
+    }
+
+    /* Spacing */
+    .complaint-section .pe-5 {
+        padding-right: 1rem !important;
+    }
+
+    .complaint-section .ms-4 {
+        margin-left: 0 !important;
+        margin-top: 1.5rem;
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .hero-section h1 {
+        font-size: 1.8rem;
+    }
+    .about-heading {
+        font-size: 2.5rem !important;
+    }
+    .compensation-card {
+        gap: 20px;
+    }
+    .latest-claims-title {
+        font-size: 1.8rem;
+    }
+    .card {
+        margin: 20px auto;
+    }
+    .compensation-card {
+        margin: 10px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+        margin: 1rem -10px;
+        width: calc(100% + 20px);
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .hero-section h1 {
+        font-size: 2rem;
+    }
+    .about-heading {
+        font-size: 3rem !important;
+    }
+    .compensation-card {
+        gap: 25px;
+    }
+    .team-section .img-fluid {
+        max-width: 80%;
+    }
+    .card {
+        margin: 20px auto;
+    }
+    .about-us-section .img-fluid {
+        height: auto;
+    }
+    .compensation-card {
+        margin: 10px;
+    }
+
+    /* Tables */
+    .table-wrapper {
+        margin: 1.5rem 0;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .hero-section h1 {
+        font-size: 2.2rem;
+    }
+}
+
+/* Common responsive styles */
+@media (max-width: 991.98px) {
+    /* Tables */
+    .table-wrapper {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto;
+        position: relative;
+    }
+
+    .table-term {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-term thead th {
+        background-color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Improve touch scrolling */
+    .table-wrapper {
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+
+    /* Table content */
+    .table-term td {
+        max-width: none;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Sections spacing */
+    .py-6 {
+        padding-top: 3rem !important;
+        padding-bottom: 3rem !important;
+    }
+
+    /* Text adjustments */
+    h2 {
+        font-size: 1.8rem;
+    }
+    .paragraph {
+        font-size: 0.95rem;
+    }
+
+    /* Navigation */
+    .navbar-nav .nav-link {
+        padding: 0.5rem 0;
+    }
+    .navbar-nav .bgcolor {
+        margin-top: 10px;
+        text-align: center;
+    }
+
+    /* Images */
+    .footeri {
+        height: auto;
+    }
+    .cancel-image {
+        height: auto;
+        max-width: 100%;
+    }
+
+    /* Cards and sections */
+    .compensation-card {
+        max-width: 100%;
+    }
+    .check-claim-section h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Header image */
+    .cancel-image {
+        margin: 1rem 0 2rem;
+    }
+
+    .cancel-image img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+    }
+
+    /* Fees section */
+    .fees-section.py-5 {
+        padding: 2rem 15px !important;
+    }
+
+    .fees-section .container {
+        padding: 15px;
+    }
+
+    .fees-section .fw-bold {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .fees-section div:not(.table-wrapper) {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Content structure */
+    .row.align-items-center {
+        flex-direction: column-reverse;
+    }
+
+    .col-md-7, .col-md-5 {
+        width: 100%;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Text content */
+    strong {
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Lists */
+    ul, ol {
+        margin-bottom: 1.5rem;
+    }
+
+    ul li, ol li {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Address formatting */
+    p:has(+ p:contains("ICO Helpline")) {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Links */
+    a {
+        word-break: break-word;
+    }
+
+    /* Cookie Policy Page Responsive Styles */
+    .cookie-policy-section {
+        padding: 2.5rem 0;
+    }
+
+    .cookie-policy-section .container {
+        padding: 0 20px;
+    }
+
+    .cookie-policy-section h2 {
+        font-size: 1.8rem;
+    }
+
+    .cookie-policy-section h5,
+    .cookie-policy-section h6 {
+        font-size: 1.05rem;
+    }
+
+    .cookie-policy-section p,
+    .cookie-policy-section ul li {
+        font-size: 0.95rem;
+    }
+
+    /* Complaints Policy Page Responsive Styles */
+    .contact-header {
+        min-height: 250px;
+    }
+
+    .contact-header h1 {
+        font-size: 2rem;
+    }
+
+    .complaint-section h2 {
+        font-size: 1.6rem;
+    }
+
+    .complaint-section p {
+        font-size: 0.95rem;
+    }
+
+    .complaint-section .img-fluid {
+        margin: 2rem auto;
+    }
+}
+
+/* Fix for specific components */
+@media (max-width: 767.98px) {
+    .fees-section {
+        padding: 1rem;
+    }
+    .accordion-button {
+        padding: 10px 15px;
+    }
+    .accordion-button::before {
+        padding: 5px 10px;
+    }
+    .footer-main .container {
+        padding: 0 15px;
+    }
+}
+
+/* Landscape orientation fixes */
+@media (max-height: 500px) and (orientation: landscape) {
+    .hero-section {
+        min-height: auto;
+        padding: 30px 0;
+    }
+    
+    .simple-claim-section {
+        min-height: 300px;
+    }
+    
+    .compensation-card {
+        padding: 15px;
+    }
+
+    .cancel-image {
+        max-height: 200px;
+        overflow: hidden;
+    }
+
+    .cancel-image img {
+        object-fit: cover;
+        height: 100%;
+    }
+
+    .img-fluid {
+        /* max-height: 150px; */
+        width: auto;
+    }
+
+    /* Cookie Policy Page Responsive Styles */
+    .cookie-policy-section {
+        padding: 1.5rem 0;
+    }
+
+    .cookie-policy-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .cookie-policy-section .container {
+        max-width: 90%;
+    }
+
+    /* Complaints Policy Page Responsive Styles */
+    .contact-header {
+        min-height: 180px;
+        padding: 1rem;
+    }
+
+    .complaint-section .img-fluid {
+        max-height: 200px;
+        width: auto;
+    }
+
+    .table-wrapper {
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+}
+
+/* Privacy Policy Page Responsive Styles */
+@media (min-width: 577px) and (max-width: 767px) {
+    .container.my-5 {
+        padding: 0 15px;
+    }
+
+    .content {
+        font-size: 0.95rem;
+    }
+
+    h2.fw-bold {
+        font-size: 1.8rem;
+    }
+
+    .img-fluid {
+        margin: 2rem 0;
+    }
+   
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    
+
+    .content {
+        font-size: 1rem;
+    }
+
+    /* Image columns */
+    .col-md-5.text-center {
+        padding: 1rem;
+    }
+
+    /* Complaints Policy Page Responsive Styles */
+    .complaint-section .pe-5 {
+        padding-right: 2rem !important;
+    }
+
+    .complaint-section .ms-4 {
+        margin-left: 1rem !important;
+    }
+
+    .complaint-section .img-fluid {
+        max-width: 90%;
+    }
+}
+
+/* Image optimizations for all screen sizes */
+@media (max-width: 1200px) {
+    .img-fluid.rounded-4 {
+        max-width: 100%;
+        height: auto;
+        margin: 1rem auto;
+    }
+}
+
+/* Common styles for cookie policy across all devices */
+@media (max-width: 991px) {
+    .cookie-policy-section a {
+        color: #E53E3E;
+        text-decoration: underline;
+        transition: opacity 0.3s;
+    }
+
+    .cookie-policy-section a:hover {
+        opacity: 0.8;
+    }
+
+    .cookie-policy-section ul {
+        list-style-type: disc;
+    }
+
+    .cookie-policy-section ul li {
+        padding-left: 0.5rem;
+    }
+
+    /* Complaints Policy Page Responsive Styles */
+    .complaint-section a {
+        word-break: break-word;
+        color: inherit;
+    }
+
+    /* Image containers */
+    .complaint-section .col-md-4.mb-4.mb-md-0,
+    .complaint-section .col-lg-4 {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem !important;
+    }
+
+    /* Text alignment */
+    .complaint-section [style*="text-align:justify"] {
+        text-align: left !important;
+    }
+
+    /* List spacing */
+    .complaint-section ul:not(.list-unstyled),
+    .complaint-section ol {
+        margin-bottom: 1.5rem;
+    }
+}
+@media (max-width: 576px) {
+    .cookie-policy-link{
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 767px) {
+    .faq-section {
+        padding: 3rem 0;
+    }
+
+    .faq-title {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .accordion-button {
+        font-size: 0.95rem;
+        padding: 1.1rem 3.2rem 1.1rem 1.1rem !important;
+        min-height: 60px;
+    }
+
+    .accordion-button::before {
+        font-size: 22px;
+        min-width: 45px;
+    }
+
+    .faq-section .image {
+        max-width: 100%;
+        margin-top: 2rem;
+        max-height: 400px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    .faq-section .image {
+        max-height: 500px;
+        width: 100%;
+    }
+
+    .faq-title {
+        margin-bottom: 2rem;
+    }
+}
+
+@media (max-width: 991px) {
+    .faq-section .row {
+        flex-direction: column;
+    }
+
+    .faq-section .col-md-6:last-child {
+        margin-top: 2rem;
+    }
+
+    .faq-section .image {
+        width: 100%;
+        object-fit: cover;
+    }
+
+    .accordion-button {
+        white-space: normal;
+        line-height: 1.4;
+    }
+}
+
+@media (min-width: 992px) {
+    .faq-section .image {
+        height: 100%;
+        max-height: 644px;
+        object-fit: cover;
+    }
+
+    .faq-section .col-md-6:last-child {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Landscape Mode */
+@media (max-height: 500px) and (orientation: landscape) {
+    .faq-section {
+        padding: 2rem 0;
+    }
+
+    .faq-section .row {
+        flex-direction: row;
+    }
+
+    .faq-section .image {
+        max-height: 250px;
+    }
+
+    .accordion-button {
+        padding: 0.75rem 3rem 0.75rem 1rem !important;
+        min-height: 50px;
+    }
+
+    .accordion-button::before {
+        font-size: 18px;
+        min-width: 40px;
+    }
+
+    .accordion-body {
+        padding: 0.75rem;
+    }
+}
