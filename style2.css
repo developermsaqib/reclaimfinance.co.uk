@@ -1,0 +1,106 @@
+.bg-car-index{
+    background-image: url("./images/bmw.png");
+    position: absolute;
+    top: 37%;
+    width: 40%;
+    background-repeat: no-repeat;
+    bottom: 0;
+    right: 0%;
+    background-size: contain;
+}
+
+.BtnFind{
+        background: black;
+    border-radius: 0 10px 10px 0;
+    bottom: 0;
+    color: #fff;
+    cursor: pointer;
+    display: block;
+    font-size: 14px;
+    font-weight: 400;
+    padding-left: 30px;
+    padding-right: 30px;
+    line-height: 39px;
+    height: 62px;
+    margin: 0;
+    min-width: auto;
+    position: absolute;
+    right: 0;
+    text-align: center;
+    -webkit-text-decoration: none;
+    text-decoration: none;
+    top: 36px;
+}
+
+.property {
+    background: white !important;
+    position: absolute;
+    left: 0px;
+    width: 85% !important;
+    top: 100%;
+    border: 1px solid #b1c9d7;
+    z-index: 999;
+    max-height: 300px;
+    overflow-y: scroll;
+    border-radius: 3px !important;
+    -webkit-border-radius: 3px !important;
+    -moz-border-radius: 3px !important;
+    -ms-border-radius: 3px !important;
+    -o-border-radius: 3px !important;
+}
+
+.address-link {
+    display: block;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 4px 5px 4px 10px;
+    -webkit-text-decoration: none;
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid #f1f1f1;
+    text-align: left !important;
+}
+
+.bg-accent2 {
+    background-color: #566c7a;
+}
+
+/* New styles for IVA radio buttons */
+.iva.peer:checked ~ div {
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 2px rgb(80 105 150 / 0.5);
+    background-color: #566c7a !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.title.peer:checked ~ div {
+    transition: all 0.3s ease;
+    box-shadow: 0 0 0 2px rgb(80 105 150 / 0.5);
+    background-color: #566c7a !important;
+    color: white !important;
+    font-weight: 600;
+}
+
+.iva.peer:checked ~ div:hover {
+    box-shadow: 0 0 0 3px rgb(80 105 150 / 0.6);
+    background-color: #566c7a !important;
+}
+
+.title.peer:checked ~ div:hover {
+    box-shadow: 0 0 0 3px rgb(80 105 150 / 0.6);
+    background-color: #566c7a !important;
+}
+
+/* Animation for the selection */
+.peer-checked\:bg-theme {
+    transition: background-color 0.3s ease, color 0.3s ease, font-weight 0.2s ease !important;
+}
+
+/* Enhanced hover state */
+div.hover\:shadow:hover {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+}
+.hidden{
+    display: none !important;
+}

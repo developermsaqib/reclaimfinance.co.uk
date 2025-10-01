@@ -9,37 +9,23 @@
 
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsive.css">
+    
+     <!--<link href="tailwind.css" rel="stylesheet">-->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>-->
+     
+    <!--<link rel="stylesheet" href="style2.css">-->
 </head>
 <body>
     <div id="header"></div>
 
     <main>
-        <section class="hero-section text-white d-flex align-items-center" style="background-image: url('./assets/layout.png'); background-size: cover; background-position: center;">
-            <div class="container">
-                <div class="row justify-content-end align-items-center">
-                    <div class="col-md-8 d-flex align-items-end layoutt">
-                        <h1 class="display-6 fw-semibold  ">Did you buy a car on finance at any point between April 2007 and January 2021?</h1>
-                    </div>
-                    <div class=" sm-col-12 col-md-4 d-flex justify-content-end">
-                        <div class="card p-4 text-center align-self-end mt-5" id="vehicle-check-form" style="background-color: white; color: black; border-radius: 15px;">
-                            <p class="paragraph mb-2">It's quick and</p>
-                            <h2 class="mb-4  form-title"><span style="color: #dc3545;">Get Started <br></span> Here</h2>
-                            <div class="input-group mb-3">
-                                <div id="vehicle-form-container" class="w-100">
-                                    <!-- Vehicle form will be injected here -->
-                                </div>
-                            </div>
-                        <div class="d-flex align-items-center justify-content-center mt-5">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#000000" class="me-2" viewBox="0 0 24 24">
-                                <path d="M17 9V7a5 5 0 0 0-10 0v2a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3zm-8-2a3 3 0 0 1 6 0v2H9V7zm10 12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7z"/>
-                            </svg>
-                            <span class="text-black" style="font-size:1.1rem;">SSL Data Encryption</span>
-                        </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="container-fluid g-0 ">
+                 <iframe  src="stepper-form.html" type="html/text" width="100%" style="min-height: 440px; border: none;" frameBorder="0">
+                
+                 </iframe>
             </div>
-        </section>
+           
+        
 <!--Part 02-->
         <section class="fca-update bg-black text-white py-5 position-relative">
             <div class="container">

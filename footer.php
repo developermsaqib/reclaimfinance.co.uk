@@ -12,8 +12,8 @@
                         <h5 class="text-danger">ReClaims Finance</h5>
                         <p class="mb-1">Unit31,</p>
                         <p class="mb-1">Carriocca Business Park,2</p>
-                        <p class="mb-1">Helidon CI,</p>
-                        <p class="mb-1">Ardwick, Manchester,</p>
+                        <p class="mb-1">Helidon CI, Ardwick</p>
+                        <p class="mb-1">Manchester,</p>
                         <p class="mb-3">M12 4AH</p>
                         <p class="mb-1">T: 01615412053</p>
                         <p class="mb-1">E: <a href="mailto:info@reclaimsfinance.co.uk" class="text-danger">info@reclaimsfinance.co.uk</a></p>
