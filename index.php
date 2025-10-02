@@ -371,11 +371,11 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr><td>A</td><td>1-1,499</td><td>30.00%</td><td>$420</td></tr>
-                    <tr><td>B</td><td>1,500-9,999</td><td>28.00%</td><td>$2500</td></tr>
-                    <tr><td>C</td><td>10,000-24,999</td><td>25.00%</td><td>$5000</td></tr>
-                    <tr><td>D</td><td>25,000-49,999</td><td>20.00%</td><td>$7500</td></tr>
-                    <tr><td>E</td><td>50,000</td><td>15.00%</td><td>$10000</td></tr>
+                    <tr><td>A</td><td>1-1,499</td><td>30.00%</td><td>£420</td></tr>
+                    <tr><td>B</td><td>1,500-9,999</td><td>28.00%</td><td>£2500</td></tr>
+                    <tr><td>C</td><td>10,000-24,999</td><td>25.00%</td><td>£5000</td></tr>
+                    <tr><td>D</td><td>25,000-49,999</td><td>20.00%</td><td>£7500</td></tr>
+                    <tr><td>E</td><td>50,000</td><td>15.00%</td><td>£10000</td></tr>
                   </tbody>
                 </table>
               </div>
