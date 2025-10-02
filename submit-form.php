@@ -55,6 +55,7 @@ $formData['claimPdfUrl'] = $formData['claimPdfUrl'] ?? '';
 $formData['contactId'] = $formData['contactId'] ?? '';
 $formData['ipAddress'] = $formData['ipAddress'] ?? $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
 $formData['kyc'] = $formData['kyc'] ?? '';
+$formData['url'] = $formData['url'] ?? 'https://reclaimsfinance.co.uk/';
 
 // Build the API URL with parameters
 $apiUrl = 'https://pcpclaim.pro/api/v1/webhooks/claims';
@@ -162,9 +163,96 @@ if ($httpCode >= 400) {
     exit();
 }
 
-// Handle PCP Pro API response (Yes/No)
+
 $apiResponse = trim($response);
 error_log("PCP Pro API Response: " . $apiResponse);
+
+// --- Send to additional API endpoint ---
+$newApiUrl = 'https://gateway.claim3000.uk/api/send-stepper-form'; // <-- Change to your actual endpoint
+$referralId = ''; // You can generate or fetch this as needed
+
+// Helper: extract day, month, year from date_of_birth (format: YYYY-MM-DD or DD/MM/YYYY)
+function extractDayMonthYear($dob) {
+    if (strpos($dob, '-') !== false) {
+        $parts = explode('-', $dob);
+        if (strlen($parts[0]) === 4) {
+            // YYYY-MM-DD
+            return ['day' => ltrim($parts[2], '0'), 'month' => ltrim($parts[1], '0'), 'year' => $parts[0]];
+        }
+    } elseif (strpos($dob, '/') !== false) {
+        $parts = explode('/', $dob);
+        if (strlen($parts[2]) === 4) {
+            // DD/MM/YYYY
+            return ['day' => ltrim($parts[0], '0'), 'month' => ltrim($parts[1], '0'), 'year' => $parts[2]];
+        }
+    }
+    return ['day' => '', 'month' => '', 'year' => ''];
+}
+
+$dobParts = extractDayMonthYear($formData['date_of_birth']);
+
+$newPayload = [
+    'referralId' => $referralId,
+    'addressData' => [
+        'Address Line 1' => $formData['street'] ?? '',
+        'post_town' => $formData['postTown'] ?? '',
+        'county' => $formData['county'] ?? '',
+        'postcode' => $formData['postCode'] ?? ''
+    ],
+    'contactData' => [
+        'title' => $formData['title'] ?? '',
+        'firstName' => $formData['firstname'] ?? '',
+        'lastName' => $formData['lastname'] ?? '',
+        'day' => $dobParts['day'],
+        'month' => $dobParts['month'],
+        'year' => $dobParts['year']
+    ],
+    'commData' => [
+        'mobile' => $formData['phone'] ?? '',
+        'email' => $formData['email'] ?? ''
+    ],
+    'personalData' => [
+        'title' => $formData['title'] ?? '',
+        'firstName' => $formData['firstname'] ?? '',
+        'iva' => $formData['iva'] ?? '',
+        'lastName' => $formData['lastname'] ?? '',
+        'day' => $dobParts['day'],
+        'month' => $dobParts['month'],
+        'year' => $dobParts['year'],
+        'mobile' => $formData['phone'] ?? '',
+        'email' => $formData['email'] ?? '',
+        'buildingNumber' => $formData['houseNumber'] ?? '',
+        'buildingName' => '',
+        'street' => $formData['street'] ?? '',
+        'town' => $formData['postTown'] ?? '',
+        'postcode' => $formData['postCode'] ?? '',
+        'county' => $formData['county'] ?? ''
+    ],
+    'imageData' => null,
+    'hrefs' => [
+        $formData['url']
+    ]
+];
+
+$ch2 = curl_init();
+curl_setopt($ch2, CURLOPT_URL, $newApiUrl);
+curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch2, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch2, CURLOPT_TIMEOUT, 30);
+curl_setopt($ch2, CURLOPT_SSL_VERIFYPEER, true);
+curl_setopt($ch2, CURLOPT_USERAGENT, 'PHP-Proxy/1.0');
+curl_setopt($ch2, CURLOPT_POST, true);
+curl_setopt($ch2, CURLOPT_POSTFIELDS, json_encode($newPayload));
+curl_setopt($ch2, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    'Accept: application/json'
+]);
+$newApiResponse = curl_exec($ch2);
+$newApiHttpCode = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
+$newApiError = curl_error($ch2);
+curl_close($ch2);
+error_log("New API response: $newApiResponse, HTTP code: $newApiHttpCode, Error: $newApiError");
+// --- End additional API call ---
 
 if ($apiResponse === 'Yes') {
     // Success - API accepted the submission
@@ -179,14 +267,13 @@ if ($apiResponse === 'Yes') {
 } elseif ($apiResponse === 'No') {
     // API rejected the submission
     error_log("PCP Pro API rejected submission: " . $apiResponse);
-    
-    // Store rejected submission for review
+    // ...existing code...
     $rejectedData = [
         'form_data' => $formData,
         'api_response' => 'No',
         'timestamp' => date('Y-m-d H:i:s')
     ];
-    
+    // ...existing code...
     $rejectedFile = __DIR__ . '/rejected_submissions_' . date('Y-m-d') . '.json';
     $existingRejected = [];
     if (file_exists($rejectedFile)) {
@@ -194,8 +281,7 @@ if ($apiResponse === 'Yes') {
     }
     $existingRejected[] = $rejectedData;
     file_put_contents($rejectedFile, json_encode($existingRejected, JSON_PRETTY_PRINT));
-    
-    // Return success to user but note the rejection
+    // ...existing code...
     http_response_code(200);
     echo json_encode([
         'success' => true,
@@ -208,14 +294,13 @@ if ($apiResponse === 'Yes') {
 } else {
     // Unexpected response
     error_log("Unexpected API response: " . $apiResponse);
-    
-    // Store for review
+    // ...existing code...
     $unexpectedData = [
         'form_data' => $formData,
         'api_response' => $apiResponse,
         'timestamp' => date('Y-m-d H:i:s')
     ];
-    
+    // ...existing code...
     $unexpectedFile = __DIR__ . '/unexpected_responses_' . date('Y-m-d') . '.json';
     $existingUnexpected = [];
     if (file_exists($unexpectedFile)) {
@@ -223,8 +308,7 @@ if ($apiResponse === 'Yes') {
     }
     $existingUnexpected[] = $unexpectedData;
     file_put_contents($unexpectedFile, json_encode($existingUnexpected, JSON_PRETTY_PRINT));
-    
-    // Return success to user
+    // ...existing code...
     http_response_code(200);
     echo json_encode([
         'success' => true,

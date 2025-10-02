@@ -240,6 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formDataToSubmit.append('contactId', ''); // Skip as requested
             formDataToSubmit.append('ipAddress', ipAddress);
             formDataToSubmit.append('kyc', ''); // Skip as requested
+            formDataToSubmit.append('url', window.location.href);
 
             // Debug: Log the form data being sent (remove this in production)
             console.log('Submitting form data to PHP proxy');
