@@ -82,19 +82,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Update button states
+        // Update button states for 3 steps
         if (n === 0) {
             backStep.classList.add('hidden');
-            if (formData.currentAddress) {
-                nextStep.classList.remove('hidden');
-                nextStep.textContent = 'Continue';
-            } else {
-                nextStep.classList.add('hidden');
-            }
-        } else {
+            nextStep.classList.remove('hidden');
+            nextStep.textContent = 'Continue';
+        } else if (n === 1) {
             backStep.classList.remove('hidden');
+            nextStep.classList.remove('hidden');
+            nextStep.textContent = 'Continue';
+        } else if (n === 2) {
+            backStep.classList.remove('hidden');
+            nextStep.classList.remove('hidden');
             nextStep.textContent = 'Submit';
-            nextStep.classList.remove('bg-green-500', 'hover:bg-green-600');
         }
     }
 
@@ -327,27 +327,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function validateCurrentStep() {
         console.log('Validating step:', currentTab);
-        
         if (currentTab === 0) {
-            // Validate first step (address)
-            console.log('Current address:', formData.currentAddress);
+            // Step 1: Address
             if (!formData.currentAddress) {
-                console.log('No current address selected');
                 selectedAddressError.classList.remove('hidden');
                 return false;
             }
-            
             if (!prevAddressDiv.classList.contains('hidden') && !formData.previousAddress) {
-                console.log('Previous address required but not provided');
                 document.querySelector('.prevselectedAddressError').classList.remove('hidden');
                 return false;
             }
-            
-            console.log('Step 0 validation passed');
             return true;
-        } else {
-            // Validate second step
-            console.log('Validating step 1 (personal details)');
+        } else if (currentTab === 1) {
+            // Step 2: IVA, Title, Name, DOB, Email, Phone
+            let isValid = true;
             const bankruptcy = document.querySelector('input[name="iva"]:checked');
             const title = document.querySelector('input[name="title"]:checked');
             const firstNameInput = document.getElementById('first-name');
@@ -357,7 +350,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const dayInput = document.getElementById('dayOfBirth');
             const monthInput = document.getElementById('monthOfBirth');
             const yearInput = document.getElementById('yearOfBirth');
-            const marketingInput = document.querySelector('input[type="checkbox"].form-checkbox');
 
             const firstName = firstNameInput ? firstNameInput.value.trim() : '';
             const lastName = lastNameInput ? lastNameInput.value.trim() : '';
@@ -366,66 +358,65 @@ document.addEventListener('DOMContentLoaded', function() {
             const day = dayInput ? dayInput.value : '';
             const month = monthInput ? monthInput.value : '';
             const year = yearInput ? yearInput.value : '';
-            const marketing = marketingInput ? marketingInput.checked : false;
-            
-            console.log('Form data:', { bankruptcy: bankruptcy?.value, title: title?.value, firstName, lastName, email, phone, day, month, year });
-            
-            let isValid = true;
-            
+
             if (!bankruptcy) {
                 document.querySelector('.error-div').textContent = 'Please select your bankruptcy status';
                 isValid = false;
             }
-            
             if (!title) {
                 document.querySelector('.error-div').textContent = 'Please select your title';
                 isValid = false;
             }
-            
             if (!firstName || !lastName) {
-                // Show error in the error-div for name fields
                 const nameErrorDiv = document.querySelector('.error-div');
                 if (nameErrorDiv) {
                     nameErrorDiv.textContent = 'Please enter both first and last name';
                 }
                 isValid = false;
             }
-            
             if (!validateEmail(email)) {
                 document.querySelector('.emailError').classList.remove('hidden');
                 isValid = false;
             }
-            
             if (!validatePhone(phone)) {
-                // Show error in the error-div for phone field
                 const phoneErrorDiv = document.querySelector('.error-div');
                 if (phoneErrorDiv) {
                     phoneErrorDiv.textContent = 'Please enter a valid UK phone number';
                 }
                 isValid = false;
             }
-            
             if (!validateDOB(day, month, year)) {
-                // Show error in the error-checkbox div for DOB
                 const dobErrorDiv = document.querySelector('.error-checkbox');
                 if (dobErrorDiv) {
                     dobErrorDiv.textContent = 'Please enter a valid date of birth (age 18-100)';
                 }
                 isValid = false;
             }
-            
-            // Validate signature
+            return isValid;
+        } else if (currentTab === 2) {
+            // Step 3: Marketing, terms, signature, submit
+            let isValid = true;
+            // Marketing consent checkbox
+            const marketingInput = document.querySelector('input[type="checkbox"].form-checkbox');
+            if (!marketingInput || !marketingInput.checked) {
+                marketingInput?.focus();
+                isValid = false;
+            }
+            // Terms consent checkbox
+            const termsInput = document.querySelector('input[type="checkbox"].form-checkbox2');
+            if (!termsInput || !termsInput.checked) {
+                termsInput?.focus();
+                isValid = false;
+            }
+            // Signature
             const signatureBase64 = document.querySelector('.hiddenInputFieldSignature')?.value || '';
-            console.log('Signature validation:', { hasSignature: !!signatureBase64, length: signatureBase64.length });
-            if (!signatureBase64 || signatureBase64.length < 100) { // Base64 signature should be substantial
-                console.log('Signature validation failed');
+            if (!signatureBase64 || signatureBase64.length < 100) {
                 document.querySelector('.signatureError').classList.remove('hidden');
                 isValid = false;
             }
-            
-            console.log('Step 1 validation result:', isValid);
             return isValid;
         }
+        return false;
     }
 
     // Show initial form when "Find My Agreements" is clicked
