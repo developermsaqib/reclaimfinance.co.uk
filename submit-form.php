@@ -251,10 +251,19 @@ $newApiResponse = curl_exec($ch2);
 $newApiHttpCode = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
 $newApiError = curl_error($ch2);
 curl_close($ch2);
+
+// Log the second API response
 error_log("New API response: $newApiResponse, HTTP code: $newApiHttpCode, Error: $newApiError");
+
+// Handle second API errors
+if ($newApiError || $newApiHttpCode >= 400) {
+    error_log("Second API Error - HTTP Code: $newApiHttpCode, Error: $newApiError, Response: $newApiResponse");
+}
+
 // --- End additional API call ---
 
-if ($apiResponse === 'Yes') {
+// Only proceed with first API response handling if both calls were successful
+if ($apiResponse === 'Yes' && $newApiHttpCode < 400) {
     // Success - API accepted the submission
     http_response_code(200);
     echo json_encode([

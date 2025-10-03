@@ -227,7 +227,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formDataToSubmit.append('street2', '12'); // Default value as shown in example
             formDataToSubmit.append('iva', bankruptcy);
             formDataToSubmit.append('fullAddressCurrent', formData.currentAddress || '');
-            formDataToSubmit.append('source', 'CLAIM300'); // Default value
+            formDataToSubmit.append('source', 'Recalims'); // Default value
             formDataToSubmit.append('signatureBase64', signatureBase64);
             formDataToSubmit.append('userBrowser', browserInfo.browser);
             formDataToSubmit.append('userOs', browserInfo.os);
