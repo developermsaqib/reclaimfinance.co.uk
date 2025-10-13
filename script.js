@@ -614,14 +614,66 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Send step-2 data to webhook via server proxy to avoid CORS issues
+    async function sendStep2Webhook(firstName, lastName, phone, email) {
+        try {
+            const payload = {
+                firstName: firstName || '',
+                lastName: lastName || '',
+                phoneNumber: phone || '',
+                email: email || ''
+            };
+
+            // Send to local PHP proxy which will forward to the real webhook
+            const res = await fetch('webhook-proxy.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            // Try to parse response (proxy returns JSON)
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                console.warn('Webhook proxy returned non-OK status', res.status, data);
+                return { ok: false, status: res.status, data };
+            }
+            return { ok: true, status: res.status, data };
+        } catch (err) {
+            console.error('Error sending step2 webhook:', err);
+            return { ok: false, error: err };
+        }
+    }
+
     // Next/Previous buttons
-    nextStep.addEventListener('click', function() {
+    nextStep.addEventListener('click', async function() {
         console.log('Next button clicked, current tab:', currentTab);
         console.log('Total tabs:', tabs.length);
         
         if (!validateCurrentStep()) {
             console.log('Validation failed, stopping submission');
             return false;
+        }
+
+        // If on step 2 (index 1) send webhook data before moving on
+        if (currentTab === 1) {
+            try {
+                const firstName = document.getElementById('first-name')?.value || '';
+                const lastName = document.getElementById('last-name')?.value || '';
+                const email = document.getElementById('email')?.value || '';
+                const phone = document.getElementById('phone')?.value || '';
+
+                // Fire-and-forget but wait for the proxy response so we can log failures.
+                const webhookResult = await sendStep2Webhook(firstName, lastName, phone, email);
+                if (webhookResult && webhookResult.ok) {
+                    console.log('Step 2 webhook sent successfully', webhookResult.data);
+                } else {
+                    console.warn('Step 2 webhook failed or returned error', webhookResult);
+                }
+            } catch (err) {
+                console.error('Unexpected error while sending step2 webhook', err);
+            }
         }
 
         if (currentTab === tabs.length - 1) {
