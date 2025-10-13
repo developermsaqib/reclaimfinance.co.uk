@@ -617,11 +617,23 @@ document.addEventListener('DOMContentLoaded', function() {
     // Send step-2 data to webhook via server proxy to avoid CORS issues
     async function sendStep2Webhook(firstName, lastName, phone, email) {
         try {
+            // Generate a more complex unique token for each submission (letters, numbers, special chars)
+            function generateComplexToken(length = 32) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?';
+                let token = 'rf_';
+                for (let i = 0; i < length; i++) {
+                    token += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return token;
+            }
+            const token = generateComplexToken();
+
             const payload = {
                 firstName: firstName || '',
                 lastName: lastName || '',
                 phoneNumber: phone || '',
-                email: email || ''
+                Email: email || '',
+                Link: `https://reclaimsfinance.co.uk/?token=${encodeURIComponent(token)}`
             };
 
             // Send to local PHP proxy which will forward to the real webhook
@@ -654,6 +666,159 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!validateCurrentStep()) {
             console.log('Validation failed, stopping submission');
             return false;
+        }
+
+        // If on step 2 (index 1) save data and send webhook
+        if (currentTab === 1) {
+            // Get form values safely with error checking
+            const titleEl = document.querySelector('input[name="title"]:checked');
+            const firstNameEl = document.querySelector('input[name="firstName"]');
+            const lastNameEl = document.querySelector('input[name="lastName"]');
+            const phoneEl = document.querySelector('input[name="phoneNumber"]'); // Fixed phone field name
+            const emailEl = document.querySelector('input[name="email"]');
+            const postcodeEl = document.getElementById('postcode');
+            const ivaEl = document.querySelector('input[name="iva"]:checked');
+            
+            // Validate required fields (excluding previousName as it's optional)
+            if (!titleEl) {
+                alert('Please select your title');
+                return false;
+            }
+            if (!firstNameEl || !firstNameEl.value.trim()) {
+                alert('Please enter your first name');
+                return false;
+            }
+            if (!lastNameEl || !lastNameEl.value.trim()) {
+                alert('Please enter your last name');
+                return false;
+            }
+            if (!phoneEl || !phoneEl.value.trim()) {
+                alert('Please enter your phone number');
+                return false;
+            }
+            if (!emailEl || !emailEl.value.trim()) {
+                alert('Please enter your email');
+                return false;
+            }
+            if (!postcodeEl || !postcodeEl.value.trim()) {
+                alert('Please enter your postcode');
+                return false;
+            }
+            if (!ivaEl) {
+                alert('Please select whether you have been in an IVA or declared bankrupt');
+                return false;
+            }
+
+            // Get values
+            const title = titleEl.value;
+            const firstName = firstNameEl.value.trim();
+            const lastName = lastNameEl.value.trim();
+            const phone = phoneEl.value.trim();
+            const email = emailEl.value.trim();
+            const postcode = postcodeEl.value.trim();
+            const iva = ivaEl.value;
+            
+            // Previous name is optional
+            const previousNameEl = document.querySelector('input[name="previousName"]');
+            const previousName = previousNameEl ? previousNameEl.value.trim() : '';
+            
+            // Get address from selected address display
+            const address = selectedAddress ? selectedAddress.textContent.trim() : '';
+
+            // First send webhook
+            try {
+                await sendStep2Webhook(firstName, lastName, phone, email);
+            } catch (error) {
+                console.error('Webhook error:', error);
+                // Continue even if webhook fails
+            }
+
+            // Then save data and get unique link
+            try {
+                // Show loader while submitting
+                loaderDiv.classList.remove('hidden');
+                dealForm.classList.add('hidden');
+
+                // Log form field values
+                console.log('Form Fields:', {
+                    firstName,
+                    lastName,
+                    phone,
+                    email,
+                    postcode,
+                    address,
+                    title,
+                    previousName
+                });
+
+                const formData = {
+                    firstName,
+                    lastName,
+                    phoneNumber: phone, // Match the field name from the form
+                    email,
+                    postcode,
+                    address,
+                    title,
+                    previousName
+                };
+
+                console.log('Submitting data:', formData);
+
+                const response = await fetch('save-step2.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                let responseText;
+                try {
+                    responseText = await response.text();
+                    console.log('Raw server response:', responseText);
+                    
+                    // Try to parse as JSON
+                    let result;
+                    try {
+                        result = JSON.parse(responseText);
+                    } catch (parseError) {
+                        console.error('Failed to parse JSON response:', parseError);
+                        throw new Error('Server returned invalid JSON. Please check server logs.');
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(result.error || `Server returned ${response.status}`);
+                    }
+
+                    if (!result.success) {
+                        throw new Error(result.error || 'Failed to save data');
+                    }
+
+                    return result;
+                } catch (error) {
+                    console.error('Response Text:', responseText);
+                    throw error;
+                }
+
+                alert('Please check your email to complete the submission.');
+                return;
+            } catch (error) {
+                console.error('Error:', error);
+                // Hide loader and show form again on error
+                loaderDiv.classList.add('hidden');
+                dealForm.classList.remove('hidden');
+                
+                // More user-friendly error message
+                let errorMessage = 'An error occurred while saving your data. ';
+                if (error.message.includes('Server returned invalid JSON')) {
+                    errorMessage += 'Please try again in a few moments.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                alert(errorMessage);
+                return;
+            }
         }
 
         // If on step 2 (index 1) send webhook data before moving on
