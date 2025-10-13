@@ -794,6 +794,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         throw new Error(result.error || 'Failed to save data');
                     }
 
+                    // Redirect to email check page
+                    window.location.href = 'thankyou.html#check-email';
                     return result;
                 } catch (error) {
                     console.error('Response Text:', responseText);
