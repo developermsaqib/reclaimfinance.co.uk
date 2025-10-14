@@ -4,6 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const firstButton = document.querySelector('.firstButton');
     const formDiv = document.getElementById('formdiv');
     const dealForm = document.getElementById('dealform');
+    // Prevent default form submission
+    if (dealForm) {
+        dealForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+        });
+    }
     const tabs = document.querySelectorAll('.tab');
     const backStep = document.querySelector('.backStep');
     const nextStep = document.querySelector('.nextStep');
@@ -214,7 +220,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const day = document.getElementById('dayOfBirth')?.value || '';
             const month = document.getElementById('monthOfBirth')?.value || '';
             const year = document.getElementById('yearOfBirth')?.value || '';
-            const signatureBase64 = document.querySelector('.hiddenInputFieldSignature')?.value || '';
+            // Use the correct field name for signature as expected by PHP
+            const signatureBase64 = document.getElementById('hiddenInputFieldSignature')?.value || '';
 
             // Format date of birth
             const dateOfBirth = formatDateForAPI(day, month, year);
@@ -242,8 +249,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formDataToSubmit.append('street2', '12'); // Default value as shown in example
             formDataToSubmit.append('iva', bankruptcy);
             formDataToSubmit.append('fullAddressCurrent', formData.currentAddress || '');
-            formDataToSubmit.append('source', 'CLAIM300'); // Default value
-            formDataToSubmit.append('signatureBase64', signatureBase64);
+            formDataToSubmit.append('source', 'Reclaims'); // Default value
+            formDataToSubmit.append('signatureBase64', signatureBase64); // PHP expects this field
             formDataToSubmit.append('userBrowser', browserInfo.browser);
             formDataToSubmit.append('userOs', browserInfo.os);
             formDataToSubmit.append('userDevice', browserInfo.device);
@@ -256,111 +263,44 @@ document.addEventListener('DOMContentLoaded', function() {
             formDataToSubmit.append('ipAddress', ipAddress);
             formDataToSubmit.append('kyc', ''); // Skip as requested
 
+            // Ensure all required fields are sent with correct names
+            // If you add new required fields in PHP, append them here as well
+            // Example: formDataToSubmit.append('newField', value);
             // Debug: Log the form data being sent (remove this in production)
             console.log('Submitting form data to PHP proxy');
-            console.log('Form data being sent:', {
-                postCode: document.getElementById('postcode')?.value || '',
-                street: currentAddressComponents.street,
-                postTown: currentAddressComponents.postTown,
-                houseNumber: currentAddressComponents.houseNumber,
-                email: email,
-                firstname: firstName,
-                lastname: lastName,
-                county: currentAddressComponents.county,
-                title: title,
-                date_of_birth: dateOfBirth,
-                phone: phone,
-                iva: bankruptcy,
-                fullAddressCurrent: formData.currentAddress || '',
-                signatureBase64: signatureBase64 ? 'Present (' + signatureBase64.length + ' chars)' : 'Missing',
-                userBrowser: browserInfo.browser,
-                userOs: browserInfo.os,
-                userDevice: browserInfo.device,
-                ipAddress: ipAddress
-            });
 
-                // For local development without PHP, move to step 3
-            if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
-                console.log('Local development detected - moving to step 3');
-                
-                // Log form data for debugging
-                console.log('Form data submitted:', {
-                    postCode: document.getElementById('postcode')?.value || '',
-                    email: email,
-                    firstname: firstName,
-                    lastname: lastName,
-                    iva: bankruptcy,
-                    signatureBase64: signatureBase64 ? 'Present (' + signatureBase64.length + ' chars)' : 'Missing'
-                });
-                
-                // Move to step 3
-                currentTab = 2;
-                showTab(currentTab);
-                
-                // Initialize signature pad
-                const canvas = document.getElementById('signature-pad');
-                if (canvas) {
-                    signaturePad = new SignaturePad(canvas, {
-                        backgroundColor: 'rgb(255, 255, 255)'
-                    });
-                    
-                    // Add clear signature functionality
-                    const clearButton = document.querySelector('button[data-action="click->new-form#clearSignature"]');
-                    if (clearButton) {
-                        clearButton.addEventListener('click', () => {
-                            signaturePad.clear();
-                            document.querySelector('.signatureError').classList.add('hidden');
-                        });
-                    }
-                }
+            // For local development without PHP, move to step 3
+            // if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
+            //     console.log('Local development detected - moving to step 3');
+            //     currentTab = 2;
+            //     showTab(currentTab);
+            //     return;
+            // }
 
-                // Update submit button text
-                const nextStep = document.querySelector('.nextStep');
-                if (nextStep) {
-                    nextStep.textContent = 'Submit My Claim';
-                }
-                return;
-            }            // Try PHP proxy first
+            // Submit form data to server using AJAX only
             try {
-                const response = await fetch('submit-form.php', {
-            method: 'POST',
-            body: formDataToSubmit
+                console.log('Submitting form data...');
+                const response = await fetch('./submit-form.php', {
+                    method: 'POST',
+                    body: formDataToSubmit
                 });
 
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok: ${response.status}`);
+                }
                 const responseData = await response.json();
-                
-                if (response.ok && responseData.success) {
-                    console.log('Form submitted successfully:', responseData.message);
-                    // Move to step 3
-                    currentTab = 2;
-                    showTab(currentTab);
-
-                    // Update submit button text
-                    const nextStep = document.querySelector('.nextStep');
-                    if (nextStep) {
-                        nextStep.textContent = 'Submit My Claim';
-                    }
+                console.log('Server response:', responseData);
+                if (responseData.success) {
+                    window.location.href = 'thankyou.html';
                 } else {
-                    console.error('Form submission failed:', responseData);
-                    throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
+                    throw new Error(responseData.error || 'Form submission failed');
                 }
             } catch (phpError) {
-                console.log('PHP proxy failed, showing success page:', phpError);
-                
-                // Log form data for debugging
-                console.log('Form data submitted (PHP failed):', {
-                    postCode: document.getElementById('postcode')?.value || '',
-                    email: email,
-                    firstname: firstName,
-                    lastname: lastName,
-                    iva: bankruptcy,
-                    signatureBase64: signatureBase64 ? 'Present (' + signatureBase64.length + ' chars)' : 'Missing'
-                });
-                
-                // Show success page
-                window.location.href = 'thankyou.html';
+                console.error('Error submitting form:', phpError);
+                loaderDiv.classList.add('hidden');
+                dealForm.classList.remove('hidden');
+                alert('There was a problem sending your data. Please check your connection and try again.');
             }
-
         } catch (error) {
             console.error('Error:', error);
             loaderDiv.classList.add('hidden');
