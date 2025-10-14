@@ -975,84 +975,67 @@ document.addEventListener('DOMContentLoaded', function() {
     let signaturePad = null;
 
     if (signatureCanvas && clearSignatureBtn && signatureInput) {
-        // Initialize SignaturePad
+        // Set canvas dimensions
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        signatureCanvas.width = signatureCanvas.offsetWidth * ratio;
+        signatureCanvas.height = signatureCanvas.offsetHeight * ratio;
+        signatureCanvas.getContext("2d").scale(ratio, ratio);
+
+        // Initialize SignaturePad with proper configuration
         signaturePad = new SignaturePad(signatureCanvas, {
             backgroundColor: 'rgb(255, 255, 255)',
-            penColor: 'rgb(0, 0, 0)'
+            penColor: 'rgb(0, 0, 0)',
+            minWidth: 0.5,
+            maxWidth: 2.5,
+            throttle: 16, // Increase smoothness
+            velocityFilterWeight: 0.7
         });
 
         // Clear button functionality
         clearSignatureBtn.addEventListener('click', function() {
             signaturePad.clear();
+            signatureInput.value = '';
             document.querySelector('.signatureError')?.classList.add('hidden');
         });
 
-        function startDraw(e) {
-            drawing = true;
-            const pos = getPointerPos(e);
-            lastX = pos.x;
-            lastY = pos.y;
-            
-            // Clear signature error when user starts drawing
-            document.querySelector('.signatureError').classList.add('hidden');
-        }
-
-        function draw(e) {
-            if (!drawing) return;
-            e.preventDefault();
-            const pos = getPointerPos(e);
-            ctx.beginPath();
-            ctx.moveTo(lastX, lastY);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            lastX = pos.x;
-            lastY = pos.y;
-        }
-
-        function endDraw() {
-            drawing = false;
+        // Handle end of signature
+        signaturePad.addEventListener('endStroke', () => {
             // Save signature to hidden input
             const signatureData = signaturePad.toDataURL('image/png');
             signatureInput.value = signatureData;
             
-            // Debug: Log signature data (remove in production)
-            console.log('Signature captured:', signatureData ? 'Yes' : 'No');
-            console.log('Signature length:', signatureData ? signatureData.length : 0);
-            console.log('Signature preview:', signatureData ? signatureData.substring(0, 50) + '...' : 'No signature');
-            
-            // Set signature time when user finishes signing
+            // Set signature time
             const signatureTime = new Date().toLocaleString('en-GB', { 
                 timeZone: 'Europe/London',
                 hour12: false 
             });
             document.getElementById('signature_time').value = signatureTime;
-        }
-
-        // Mouse events
-        signaturePad.addEventListener('mousedown', startDraw);
-        signaturePad.addEventListener('mousemove', draw);
-        signaturePad.addEventListener('mouseup', endDraw);
-        signaturePad.addEventListener('mouseleave', endDraw);
-
-        // Touch events
-        signaturePad.addEventListener('touchstart', function(e) { startDraw(e); });
-        signaturePad.addEventListener('touchmove', function(e) { draw(e); });
-        signaturePad.addEventListener('touchend', function(e) { endDraw(e); });
-
-        // Clear button
-        clearSignatureBtn.addEventListener('click', function() {
-            ctx.clearRect(0, 0, signaturePad.width, signaturePad.height);
-            signatureInput.value = '';
-            console.log('Signature cleared');
+            
+            // Hide error message if signature exists
+            if (!signaturePad.isEmpty()) {
+                document.querySelector('.signatureError')?.classList.add('hidden');
+            }
         });
 
-        // Test function to verify signature base64 conversion (for debugging)
+        // Handle resize
+        window.addEventListener('resize', () => {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const data = signaturePad.toData();
+            
+            signatureCanvas.width = signatureCanvas.offsetWidth * ratio;
+            signatureCanvas.height = signatureCanvas.offsetHeight * ratio;
+            signatureCanvas.getContext("2d").scale(ratio, ratio);
+            
+            signaturePad.clear();
+            if (data) {
+                signaturePad.fromData(data);
+            }
+        });
+
+        // Test function to verify signature (for debugging)
         window.testSignature = function() {
             const testData = signaturePad.toDataURL('image/png');
-            console.log('Test signature base64:', testData ? 'Generated successfully' : 'Failed');
-            console.log('Test signature length:', testData ? testData.length : 0);
-            console.log('Test signature starts with:', testData ? testData.substring(0, 20) : 'No data');
-            return testData;
+            return !signaturePad.isEmpty() && testData.startsWith('data:image/png;base64,');
         };
     }
 

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reclaims Finance</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
     <link rel="stylesheet" href="style2.css">
 </head>
 
@@ -587,11 +588,11 @@
                                                         <label for="signature-pad" data-pxl="_n327">
                                                             <h4 class="text-lg mb-2 text-left" data-pxl="_n328">
                                                                 Signature</h4>
-                                                            <div class="md:h-auto h-[170px] md:w-full w-5/6"
+                                                            <div class="h-[170px] md:w-full w-5/6 relative"
                                                                 data-pxl="_n329">
                                                                 <canvas id="signature-pad"
-                                                                    class="bg-white border border-[#374151] rounded-lg"
-                                                                    height="180" data-new-form-target="canvas"
+                                                                    class="bg-white border border-[#374151] rounded-lg w-[50%] h-full absolute top-0 left-0"
+                                                                    data-new-form-target="canvas"
                                                                     data-pxl="_n330"
                                                                     style="touch-action: none; user-select: none;"></canvas>
                                                             </div>
