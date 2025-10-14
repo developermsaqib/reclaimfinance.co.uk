@@ -1,6 +1,11 @@
 // DOM Elements
+
+
 document.addEventListener('DOMContentLoaded', function() {
     // Form elements
+    const token = new URLSearchParams(window.location.search).get('token');
+    console.log('link token:', token);
+
     const firstButton = document.querySelector('.firstButton');
     const formDiv = document.getElementById('formdiv');
     const dealForm = document.getElementById('dealform');
@@ -628,7 +633,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Generate a more complex unique token for each submission (letters, numbers, special chars)
             function generateComplexToken(length = 32) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?';
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
                 let token = 'rf_';
                 for (let i = 0; i < length; i++) {
                     token += chars.charAt(Math.floor(Math.random() * chars.length));
