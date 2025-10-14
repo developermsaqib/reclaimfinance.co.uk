@@ -164,9 +164,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function handleFormSubmission() {
         console.log('handleFormSubmission called');
-    // Show loader
-    loaderDiv.classList.remove('hidden');
-    dealForm.classList.add('hidden');
+        
+        // Validate signature and terms
+        const requiredCheckbox = document.querySelector('.form-checkbox2');
+        const canvas = document.getElementById('signature-pad');
+        
+        if (!requiredCheckbox || !requiredCheckbox.checked) {
+            alert('Please confirm the terms and conditions');
+            return;
+        }
+        
+        if (canvas && signaturePad && signaturePad.isEmpty()) {
+            document.querySelector('.signatureError').classList.remove('hidden');
+            return;
+        }
+        
+        // Show loader
+        loaderDiv.classList.remove('hidden');
+        dealForm.classList.add('hidden');
 
         try {
         // Set submission time
@@ -264,9 +279,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 ipAddress: ipAddress
             });
 
-            // For local development without PHP, show success page
+                // For local development without PHP, move to step 3
             if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
-                console.log('Local development detected - showing success page');
+                console.log('Local development detected - moving to step 3');
                 
                 // Log form data for debugging
                 console.log('Form data submitted:', {
@@ -278,12 +293,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     signatureBase64: signatureBase64 ? 'Present (' + signatureBase64.length + ' chars)' : 'Missing'
                 });
                 
-                // Show success page
-                window.location.href = 'thankyou.html';
-                return;
-            }
+                // Move to step 3
+                currentTab = 2;
+                showTab(currentTab);
+                
+                // Initialize signature pad
+                const canvas = document.getElementById('signature-pad');
+                if (canvas) {
+                    signaturePad = new SignaturePad(canvas, {
+                        backgroundColor: 'rgb(255, 255, 255)'
+                    });
+                    
+                    // Add clear signature functionality
+                    const clearButton = document.querySelector('button[data-action="click->new-form#clearSignature"]');
+                    if (clearButton) {
+                        clearButton.addEventListener('click', () => {
+                            signaturePad.clear();
+                            document.querySelector('.signatureError').classList.add('hidden');
+                        });
+                    }
+                }
 
-            // Try PHP proxy first
+                // Update submit button text
+                const nextStep = document.querySelector('.nextStep');
+                if (nextStep) {
+                    nextStep.textContent = 'Submit My Claim';
+                }
+                return;
+            }            // Try PHP proxy first
             try {
                 const response = await fetch('submit-form.php', {
             method: 'POST',
@@ -294,8 +331,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (response.ok && responseData.success) {
                     console.log('Form submitted successfully:', responseData.message);
-                    // Redirect to success page
-            window.location.href = 'thankyou.html';
+                    // Move to step 3
+                    currentTab = 2;
+                    showTab(currentTab);
+
+                    // Update submit button text
+                    const nextStep = document.querySelector('.nextStep');
+                    if (nextStep) {
+                        nextStep.textContent = 'Submit My Claim';
+                    }
                 } else {
                     console.error('Form submission failed:', responseData);
                     throw new Error(responseData.error || `HTTP error! status: ${response.status}`);
@@ -394,9 +438,34 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             return isValid;
         } else if (currentTab === 2) {
-            // Step 3: Marketing, terms, signature, submit
+            // Step 3: Terms acceptance, signature, and final submit
             let isValid = true;
-            // Marketing consent checkbox
+            
+            // Check required checkboxes (excluding marketing)
+            const requiredCheckbox = document.querySelector('.form-checkbox2');
+            if (requiredCheckbox && !requiredCheckbox.checked) {
+                isValid = false;
+                const errorDiv = requiredCheckbox.parentElement.querySelector('.error-div');
+                if (errorDiv) {
+                    errorDiv.textContent = 'Please confirm the terms and conditions';
+                    errorDiv.classList.remove('hidden');
+                }
+            }
+
+            // Check signature
+            const canvas = document.getElementById('signature-pad');
+            const signatureInput = document.querySelector('.hiddenInputFieldSignature');
+            if (canvas && signatureInput && signaturePad) {
+                if (signaturePad.isEmpty()) {
+                    isValid = false;
+                    document.querySelector('.signatureError').classList.remove('hidden');
+                } else {
+                    signatureInput.value = signaturePad.toDataURL();
+                    document.querySelector('.signatureError').classList.add('hidden');
+                }
+            }
+
+            // Marketing checkbox is optional
             const marketingInput = document.querySelector('input[type="checkbox"].form-checkbox');
             if (!marketingInput || !marketingInput.checked) {
                 marketingInput?.focus();
@@ -661,14 +730,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Next/Previous buttons
     nextStep.addEventListener('click', async function() {
         console.log('Next button clicked, current tab:', currentTab);
-        console.log('Total tabs:', tabs.length);
         
         if (!validateCurrentStep()) {
             console.log('Validation failed, stopping submission');
             return false;
         }
 
-        // If on step 2 (index 1) save data and send webhook
+        // If this is the final submission from step 3
+        if (currentTab === 2) {
+            await handleFormSubmission();
+            return;
+        }
+
+        // If on step 2 (index 1), save data and send webhook before moving to step 3
         if (currentTab === 1) {
             // Get form values safely with error checking
             const titleEl = document.querySelector('input[name="title"]:checked');
@@ -794,16 +868,45 @@ document.addEventListener('DOMContentLoaded', function() {
                         throw new Error(result.error || 'Failed to save data');
                     }
 
-                    // Redirect to email check page
-                    window.location.href = 'thankyou.html#check-email';
-                    return result;
+                    // If successful, move to step 3
+                    if (result.success) {
+                        // Hide loader and show form
+                        loaderDiv.classList.add('hidden');
+                        dealForm.classList.remove('hidden');
+                        
+                        // Move to step 3
+                        currentTab = 2;
+                        showTab(currentTab);
+                        
+                        // Initialize signature pad
+                        const canvas = document.getElementById('signature-pad');
+                        if (canvas) {
+                            // Clear any existing content
+                            const ctx = canvas.getContext('2d');
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            
+                            // Setup canvas for signature
+                            canvas.width = canvas.offsetWidth;
+                            canvas.height = canvas.offsetHeight;
+                            canvas.style.backgroundColor = 'rgb(255, 255, 255)';
+                            
+                            // Initialize the signature pad
+                            const clearButton = document.querySelector('[data-action="click->new-form#clearSignature"]');
+                            if (clearButton) {
+                                clearButton.onclick = function() {
+                                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                };
+                            }
+                        }
+                        
+                        return result;
+                    } else {
+                        throw new Error(result.error || 'Failed to save data');
+                    }
                 } catch (error) {
                     console.error('Response Text:', responseText);
                     throw error;
                 }
-
-                alert('Please check your email to complete the submission.');
-                return;
             } catch (error) {
                 console.error('Error:', error);
                 // Hide loader and show form again on error
@@ -843,15 +946,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        if (currentTab === tabs.length - 1) {
-            console.log('Last tab reached, submitting form');
-            // Handle form submission
-            handleFormSubmission();
-        } else {
-            console.log('Moving to next tab');
-            currentTab++;
-            showTab(currentTab);
-        }
+        // Move to next tab (this only happens for step 1 -> 2 now)
+        currentTab++;
+        showTab(currentTab);
     });
 
     backStep.addEventListener('click', function() {
@@ -872,41 +969,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- Signature Pad Functionality ---
-    const signaturePad = document.getElementById('signature-pad');
+    const signatureCanvas = document.getElementById('signature-pad');
     const clearSignatureBtn = document.querySelector('[data-action="click->new-form#clearSignature"]');
     const signatureInput = document.querySelector('.hiddenInputFieldSignature');
-    let drawing = false;
-    let lastX = 0;
-    let lastY = 0;
+    let signaturePad = null;
 
-    if (signaturePad && clearSignatureBtn && signatureInput) {
-        const ctx = signaturePad.getContext('2d');
-        
-        // Set canvas dimensions if not already set
-        if (signaturePad.width === 0 || signaturePad.height === 0) {
-            signaturePad.width = signaturePad.offsetWidth;
-            signaturePad.height = signaturePad.offsetHeight;
-        }
-        
-        ctx.strokeStyle = '#222';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
+    if (signatureCanvas && clearSignatureBtn && signatureInput) {
+        // Initialize SignaturePad
+        signaturePad = new SignaturePad(signatureCanvas, {
+            backgroundColor: 'rgb(255, 255, 255)',
+            penColor: 'rgb(0, 0, 0)'
+        });
 
-        function getPointerPos(e) {
-            let rect = signaturePad.getBoundingClientRect();
-            if (e.touches && e.touches.length > 0) {
-                return {
-                    x: e.touches[0].clientX - rect.left,
-                    y: e.touches[0].clientY - rect.top
-                };
-            } else {
-                return {
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
-                };
-            }
-        }
+        // Clear button functionality
+        clearSignatureBtn.addEventListener('click', function() {
+            signaturePad.clear();
+            document.querySelector('.signatureError')?.classList.add('hidden');
+        });
 
         function startDraw(e) {
             drawing = true;
