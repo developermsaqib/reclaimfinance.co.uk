@@ -8,8 +8,25 @@
      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
      <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-     <link rel="stylesheet" href="css/style.css">
-     <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <style>
+        /* Fix iframe scrolling issues */
+        #formFrame {
+            overflow: hidden;
+        }
+        
+        /* Ensure the iframe container doesn't add extra height */
+        .container-fluid.g-0 {
+            overflow: hidden;
+        }
+        
+        /* Make sure the main content doesn't interfere */
+        main {
+            overflow-x: hidden;
+        }
+    </style>
 
      <!--<link href="tailwind.css" rel="stylesheet">-->
      <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>-->
@@ -31,12 +48,34 @@
 
      <main>
          <div class="container-fluid g-0 ">
-             <iframe id="formFrame" src="" type="html/text" width="100%" style="min-height: 440px; border: none;" frameBorder="0">
+            <iframe id="formFrame" src="" type="html/text" width="100%" style="height: 100vh; border: none;" frameBorder="0">
 
-             </iframe>
+            </iframe>
              <script>
                  const token = new URLSearchParams(window.location.search).get('token');
-                 document.getElementById('formFrame').src = `/reclaimsfinance/stepper-form.html?token=${encodeURIComponent(token)}`;
+                 const iframe = document.getElementById('formFrame');
+                 iframe.src = `stepper-form.html?token=${encodeURIComponent(token)}`;
+                 
+                 // Adjust iframe height to prevent double scroll
+                 iframe.onload = function() {
+                     try {
+                         // Try to get the content height from the iframe
+                         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                         const height = Math.max(
+                             iframeDoc.body.scrollHeight,
+                             iframeDoc.body.offsetHeight,
+                             iframeDoc.documentElement.clientHeight,
+                             iframeDoc.documentElement.scrollHeight,
+                             iframeDoc.documentElement.offsetHeight
+                         );
+                         
+                         // Set iframe height to content height + some padding
+                         iframe.style.height = (height + 50) + 'px';
+                     } catch (e) {
+                         // If cross-origin or other issues, use viewport height
+                         iframe.style.height = '100vh';
+                     }
+                 };
              </script>
          </div>
 
@@ -353,17 +392,24 @@
          </section>
 
          <div class="hr"></div>
-         <!--Check Claim Section -->
-         <div class="simple-claim-section text-white">
-             <div class="container">
-                 <div class="row justify-content-center">
-                     <div class="col-md-8 text-center">
-                         <h2 class="display-5 fw-bold mb-4">Simply check your vehicle registration and start your claim today.</h2>
-                         <a href="#vehicle-check-form" onclick="focusVehicleForm(event)" class="btn btn-danger btn-lg py-3 px-5">Check Your Vehicle</a>
-                     </div>
-                 </div>
-             </div>
-         </div>
+        <!--Check Claim Section -->
+        <div class="simple-claim-section text-white">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-8 text-center">
+                        <h2 class="display-5 fw-bold mb-4">Simply check your vehicle registration and start your claim today.</h2>
+                        <a href="#vehicle-check-form" onclick="focusVehicleForm(event)" class="btn btn-danger btn-lg py-3 px-5">Check Your Vehicle</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vehicle Form Container -->
+        <section id="vehicle-check-form" class="py-5" style="display: none;">
+            <div class="container">
+                <div id="vehicle-form-container"></div>
+            </div>
+        </section>
 
          <div class="container-fluid bg-black"">
         <div class=" container fees-section bg-black" id="fees">
@@ -442,28 +488,28 @@
 
      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
      <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-     <script src="https://form.consultationclaims.co.uk/api/getVForm"></script>
      <script src="./js/script.js"></script>
-     <script src=https://form.consultationclaims.co.uk/api/getVForm></script>
-
+     
+     <!-- Vehicle Form Script -->
+     <script src="https://form.consultationclaims.co.uk/api/getVForm"></script>
      <script>
-         vehicleForm.create({
-
-             instanceId: 1,
-
-             partnerId: 14,
-
-             serviceId: 1,
-
-             trackingId: 'RF-Affiliate1',
-
-             targetId: 'vehicle-form-container',
-
-             skipCheck: true,
-
-             buttonText: 'FIND MY CLAIMS'
-
-         });
+         // Only initialize if vehicleForm is available and container exists
+         if (typeof vehicleForm !== 'undefined') {
+             const container = document.getElementById('vehicle-form-container');
+             if (container) {
+                 vehicleForm.create({
+                     instanceId: 1,
+                     partnerId: 14,
+                     serviceId: 1,
+                     trackingId: 'RF-Affiliate1',
+                     targetId: 'vehicle-form-container',
+                     skipCheck: true,
+                     buttonText: 'FIND MY CLAIMS'
+                 });
+             } else {
+                 console.warn('Vehicle form container not found');
+             }
+         }
      </script>
 
  </body>

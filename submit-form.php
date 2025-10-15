@@ -20,6 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Get form data from POST request
 $formData = $_POST;
 
+// Include database connection
+require_once 'config/db.php';
+
 // Validate required fields (only the most essential ones)
 $requiredFields = [
     'postCode', 'email', 'firstname', 'lastname', 'title', 'date_of_birth', 
@@ -58,6 +61,24 @@ $formData['kyc'] = $formData['kyc'] ?? '';
 $formData['url'] = $formData['url'] ?? 'https://reclaimsfinance.co.uk/';
 $formData['referral_id'] ?? 'LRRVaqBHjSfi'; // default referral id - reclaims finance organic
 
+// Handle token-based form completion
+$token = $formData['token'] ?? null;
+if ($token) {
+    // Update the existing record to mark as completed
+    $updateStmt = $conn->prepare("UPDATE form_submissions SET 
+        completed = 1, 
+        signature_long = ?, 
+        authority_accepted = 1,
+        updated_at = CURRENT_TIMESTAMP 
+        WHERE token = ? AND completed = 0");
+    
+    if ($updateStmt) {
+        $signatureData = $formData['signatureBase64'] ?? '';
+        $updateStmt->bind_param("ss", $signatureData, $token);
+        $updateStmt->execute();
+        $updateStmt->close();
+    }
+}
 
 // Build the API URL with parameters
 $apiUrl = 'https://pcpclaim.pro/api/v1/webhooks/claims';

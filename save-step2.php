@@ -48,10 +48,28 @@ try {
         throw new Exception("Invalid JSON data: " . $error);
     }
     
+    // If token exists, update existing record instead of creating new one
+    $token = isset($data['token']) ? $data['token'] : null;
+    if ($token) {
+        // Check if the token exists and form is not completed
+        $check_stmt = $conn->prepare("SELECT id FROM submissions WHERE token = ? AND is_complete = 0");
+        $check_stmt->bind_param("s", $token);
+        $check_stmt->execute();
+        $result = $check_stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            throw new Exception('Invalid token or form already completed');
+        }
+        
+        $submission = $result->fetch_assoc();
+        $submission_id = $submission['id'];
+        $check_stmt->close();
+    }
+    
     debug_log("Decoded data", $data);
 
     // Connect to database
-    $conn = new mysqli('localhost', 'root', '', 'reclaims_finance');
+    $conn = new mysqli('sdb-c.hosting.stackcp.net', 'root', 'hwf7etr8p8', 'reclaims_finance-31373147c8');
     if ($conn->connect_error) {
         debug_log("Database connection error: " . $conn->connect_error);
         throw new Exception("Database connection failed: " . $conn->connect_error);
@@ -69,6 +87,7 @@ try {
         firstname VARCHAR(100) DEFAULT '',
         lastname VARCHAR(100) DEFAULT '',
         previousname VARCHAR(100) DEFAULT '',
+        date_of_birth DATE DEFAULT NULL,
         email VARCHAR(255) DEFAULT '',
         phone VARCHAR(50) DEFAULT '',
         authority_accepted TINYINT(1) DEFAULT 0,
@@ -96,6 +115,22 @@ try {
     $user_useragent = $_SERVER['HTTP_USER_AGENT'] ?? '';
     $user_os = php_uname('s');
 
+    // Get date of birth from form data
+    $dateOfBirth = null;
+    if (isset($data['dateOfBirth']) && !empty($data['dateOfBirth'])) {
+        $dateOfBirth = $data['dateOfBirth'];
+    } elseif (isset($data['dayOfBirth']) && isset($data['monthOfBirth']) && isset($data['yearOfBirth'])) {
+        // Construct date from separate day, month, year fields
+        $day = str_pad($data['dayOfBirth'], 2, '0', STR_PAD_LEFT);
+        $month = str_pad($data['monthOfBirth'], 2, '0', STR_PAD_LEFT);
+        $year = $data['yearOfBirth'];
+        if ($day && $month && $year) {
+            $dateOfBirth = "$year-$month-$day";
+        }
+    }
+    
+    debug_log("Date of birth extracted: " . ($dateOfBirth ?: 'NULL'));
+
     // Validate required fields
     $required_fields = ['title', 'firstName', 'lastName', 'email', 'phoneNumber', 'postcode', 'address'];
     foreach ($required_fields as $field) {
@@ -107,10 +142,10 @@ try {
 
     // Prepare and execute INSERT
     $sql = "INSERT INTO form_submissions (
-        token, title, firstname, lastname, previousname, 
+        token, title, firstname, lastname, previousname, date_of_birth,
         email, phone, postcode, address, user_ip, 
         user_useragent, user_os, expires_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))";
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
@@ -120,12 +155,13 @@ try {
 
     $previousName = isset($data['previousName']) ? $data['previousName'] : '';
     
-    $stmt->bind_param("ssssssssssss",
+    $stmt->bind_param("sssssssssssss",
         $token,
         $data['title'],
         $data['firstName'],
         $data['lastName'],
         $previousName,
+        $dateOfBirth,
         $data['email'],
         $data['phoneNumber'],
         $data['postcode'],
@@ -145,7 +181,7 @@ try {
     // Send confirmation email
     $to = $data['email'];
     $subject = "Complete Your Car Finance Claim";
-    $uniqueLink = "http://localhost/reclaimsfinance/continue.php?token=" . $token;
+    $uniqueLink = "https://reclaimsfinance.co.uk/?token=" . $token;
     
     $message = "
     <html>

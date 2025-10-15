@@ -1,17 +1,56 @@
 // DOM Elements
 
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Form elements
     const token = new URLSearchParams(window.location.search).get('token');
-    console.log('link token:', token);
 
     const firstButton = document.querySelector('.firstButton');
     const formDiv = document.getElementById('formdiv');
     const dealForm = document.getElementById('dealform');
+
+    // If token exists, fetch data and show second step
+    if (token) {
+        fetch(`fetch-data.php?token=${token}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Hide first button and show form
+                    if (firstButton) {
+                        firstButton.style.display = 'none';
+                        firstButton.classList.add('hidden');
+                    }
+                    if (formDiv) {
+                        formDiv.style.display = 'block';
+                        formDiv.classList.remove('hidden');
+                    }
+
+                    // Set current tab to 1 (step 2) and show it first
+                    currentTab = 1;
+                    showTab(currentTab);
+
+                    // Fill form data after a longer delay to ensure elements are rendered
+                    setTimeout(() => {
+                        fillFormData(data.data);
+                    }, 500);
+
+                    // Show the continue button since we have data
+                    const nextStep = document.querySelector('.nextStep');
+                    if (nextStep) {
+                        nextStep.classList.remove('hidden');
+                        nextStep.textContent = 'Continue';
+                    }
+                } else {
+                    console.error('Error fetching data:', data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
     // Prevent default form submission
     if (dealForm) {
-        dealForm.addEventListener('submit', function(e) {
+        dealForm.addEventListener('submit', function (e) {
             e.preventDefault();
         });
     }
@@ -34,6 +73,123 @@ document.addEventListener('DOMContentLoaded', function() {
     const prevPostcodeBtn = document.getElementById('prevpostcodeBtn');
     const prevPropertyDiv = document.querySelector('.prevpropertyDiv');
     const prevSelectedDiv = document.querySelector('.prevselectedDiv');
+
+    // Function to fill form data
+    function fillFormData(data) {
+        // Fill postcode and address
+        if (data.postcode) {
+            document.getElementById('postcode').value = data.postcode;
+        }
+        if (data.address) {
+            formData.currentAddress = data.address;
+            // Show selected address
+            const selectedDiv = document.querySelector('.selectedDiv');
+            const selectedAddress = document.querySelector('.selectedAddress');
+            if (selectedDiv && selectedAddress) {
+                selectedDiv.classList.remove('hidden');
+                selectedAddress.textContent = data.address;
+            }
+        }
+
+        // Fill IVA/Bankruptcy status
+        if (data.iva_bankruptcy_status) {
+            const ivaRadio = document.querySelector(`input[name="iva"][value="${data.iva_bankruptcy_status}"]`);
+            if (ivaRadio) {
+                ivaRadio.checked = true;
+            }
+        } else {
+            // Set default to 'no' if not specified
+            const ivaRadio = document.querySelector(`input[name="iva"][value="no"]`);
+            if (ivaRadio) {
+                ivaRadio.checked = true;
+            }
+        }
+
+        // Fill title
+        if (data.title) {
+            const titleRadio = document.querySelector(`input[name="title"][value="${data.title}"]`);
+            if (titleRadio) {
+                titleRadio.checked = true;
+            }
+        }
+
+        // Fill names
+        if (data.firstname) {
+            document.getElementById('first-name').value = data.firstname;
+        }
+        if (data.lastname) {
+            document.getElementById('last-name').value = data.lastname;
+        }
+        if (data.previousname) {
+            document.getElementById('previous-name').value = data.previousname;
+        }
+
+        // Fill email and phone
+        if (data.email) {
+            document.getElementById('email').value = data.email;
+        }
+        if (data.phone) {
+            document.getElementById('phone').value = data.phone;
+        }
+
+        // Fill date of birth if available
+        if (data.date_of_birth) {
+            console.log('Filling date of birth:', data.date_of_birth);
+
+            const dobParts = data.date_of_birth.split('-');
+            console.log('Date parts:', dobParts);
+
+            if (dobParts.length === 3) {
+                // Keep leading zeros for proper formatting
+                const day = dobParts[2];
+                const month = dobParts[1];
+                const year = dobParts[0];
+
+                console.log('Parsed date:', { day, month, year });
+
+                const daySelect = document.getElementById('dayOfBirth');
+                const monthSelect = document.getElementById('monthOfBirth');
+                const yearSelect = document.getElementById('yearOfBirth');
+
+                console.log('Date select elements:', { daySelect, monthSelect, yearSelect });
+
+                if (daySelect) {
+                    daySelect.value = day;
+                    console.log('Day set to:', daySelect.value);
+                }
+                if (monthSelect) {
+                    monthSelect.value = month;
+                    console.log('Month set to:', monthSelect.value);
+                }
+                if (yearSelect) {
+                    yearSelect.value = year;
+                    console.log('Year set to:', yearSelect.value);
+                }
+
+                // If elements weren't found, try again after a short delay
+                if (!daySelect || !monthSelect || !yearSelect) {
+                    console.log('Date elements not found, retrying...');
+                    setTimeout(() => {
+                        const retryDaySelect = document.getElementById('dayOfBirth');
+                        const retryMonthSelect = document.getElementById('monthOfBirth');
+                        const retryYearSelect = document.getElementById('yearOfBirth');
+
+                        if (retryDaySelect) retryDaySelect.value = day;
+                        if (retryMonthSelect) retryMonthSelect.value = month;
+                        if (retryYearSelect) retryYearSelect.value = year;
+
+                        console.log('Retry completed');
+                    }, 200);
+                }
+            }
+        } else {
+            console.log('No date_of_birth in data');
+        }
+
+        // Update form data object
+        formData.currentAddress = data.address || '';
+        formData.previousAddress = data.previous_address || '';
+    }
 
     // Form state
     let currentTab = 0;
@@ -71,9 +227,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const now = new Date();
         const minAge = 18;
         const maxAge = 100;
-        
+
         if (date > now) return false;
-        
+
         const age = (now - date) / (1000 * 60 * 60 * 24 * 365.25);
         return age >= minAge && age <= maxAge;
     }
@@ -160,58 +316,56 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to extract address components
     function extractAddressComponents(address) {
         if (!address) return { street: '', postTown: '', houseNumber: '', county: '' };
-        
+
         const parts = address.split(',');
         const street = parts[0] || '';
         const postTown = parts[parts.length - 3] || '';
         const county = parts[parts.length - 2] || '';
-        
+
         // Extract house number from street
         const houseNumberMatch = street.match(/^(\d+)/);
         const houseNumber = houseNumberMatch ? houseNumberMatch[1] : '';
-        
+
         return { street, postTown, houseNumber, county };
     }
 
     async function handleFormSubmission() {
-        console.log('handleFormSubmission called');
-        
         // Validate signature and terms
         const requiredCheckbox = document.querySelector('.form-checkbox2');
         const canvas = document.getElementById('signature-pad');
-        
+
         if (!requiredCheckbox || !requiredCheckbox.checked) {
             alert('Please confirm the terms and conditions');
             return;
         }
-        
+
         if (canvas && signaturePad && signaturePad.isEmpty()) {
             document.querySelector('.signatureError').classList.remove('hidden');
             return;
         }
-        
+
         // Show loader
         loaderDiv.classList.remove('hidden');
         dealForm.classList.add('hidden');
 
         try {
-        // Set submission time
-        const submissionTime = new Date().toLocaleString('en-GB', { 
-            timeZone: 'Europe/London',
-            hour12: false 
-        });
-        document.getElementById('submission_time').value = submissionTime;
+            // Set submission time
+            const submissionTime = new Date().toLocaleString('en-GB', {
+                timeZone: 'Europe/London',
+                hour12: false
+            });
+            document.getElementById('submission_time').value = submissionTime;
 
             // Get system information
             const ipAddress = await getUserIP();
             const browserInfo = getBrowserInfo();
-            
+
             // Get signature time
-            const signatureTime = document.getElementById('signature_time').value || new Date().toLocaleString('en-GB', { 
+            const signatureTime = document.getElementById('signature_time').value || new Date().toLocaleString('en-GB', {
                 timeZone: 'Europe/London',
-                hour12: false 
+                hour12: false
             });
-            
+
             // Get landing time
             const landingTime = document.querySelector('.landing_time').value;
 
@@ -255,6 +409,12 @@ document.addEventListener('DOMContentLoaded', function() {
             formDataToSubmit.append('iva', bankruptcy);
             formDataToSubmit.append('fullAddressCurrent', formData.currentAddress || '');
             formDataToSubmit.append('source', 'Reclaims'); // Default value
+
+            // Include token if it exists
+            const token = new URLSearchParams(window.location.search).get('token');
+            if (token) {
+                formDataToSubmit.append('token', token);
+            }
             formDataToSubmit.append('signatureBase64', signatureBase64); // PHP expects this field
             formDataToSubmit.append('userBrowser', browserInfo.browser);
             formDataToSubmit.append('userOs', browserInfo.os);
@@ -268,23 +428,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formDataToSubmit.append('ipAddress', ipAddress);
             formDataToSubmit.append('kyc', ''); // Skip as requested
 
-            // Ensure all required fields are sent with correct names
-            // If you add new required fields in PHP, append them here as well
-            // Example: formDataToSubmit.append('newField', value);
-            // Debug: Log the form data being sent (remove this in production)
-            console.log('Submitting form data to PHP proxy');
-
-            // For local development without PHP, move to step 3
-            // if (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost') {
-            //     console.log('Local development detected - moving to step 3');
-            //     currentTab = 2;
-            //     showTab(currentTab);
-            //     return;
-            // }
-
             // Submit form data to server using AJAX only
             try {
-                console.log('Submitting form data...');
                 const response = await fetch('./submit-form.php', {
                     method: 'POST',
                     body: formDataToSubmit
@@ -294,7 +439,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(`Network response was not ok: ${response.status}`);
                 }
                 const responseData = await response.json();
-                console.log('Server response:', responseData);
                 if (responseData.success) {
                     window.location.href = 'thankyou.html';
                 } else {
@@ -315,21 +459,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function validateCurrentStep() {
-        console.log('Validating step:', currentTab);
+        // Clear all previous error messages
+        clearAllErrorMessages();
+
         if (currentTab === 0) {
             // Step 1: Address
             if (!formData.currentAddress) {
                 selectedAddressError.classList.remove('hidden');
+                selectedAddressError.textContent = 'Please select your address';
                 return false;
             }
             if (!prevAddressDiv.classList.contains('hidden') && !formData.previousAddress) {
                 document.querySelector('.prevselectedAddressError').classList.remove('hidden');
+                document.querySelector('.prevselectedAddressError').textContent = 'Please select your previous address';
                 return false;
             }
             return true;
         } else if (currentTab === 1) {
             // Step 2: IVA, Title, Name, DOB, Email, Phone
             let isValid = true;
+            const errors = [];
+
             const bankruptcy = document.querySelector('input[name="iva"]:checked');
             const title = document.querySelector('input[name="title"]:checked');
             const firstNameInput = document.getElementById('first-name');
@@ -348,53 +498,61 @@ document.addEventListener('DOMContentLoaded', function() {
             const month = monthInput ? monthInput.value : '';
             const year = yearInput ? yearInput.value : '';
 
+            // Validate each field and show specific error messages
             if (!bankruptcy) {
-                document.querySelector('.error-div').textContent = 'Please select your bankruptcy status';
+                errors.push('Please select whether you have been in an IVA or declared bankrupt');
                 isValid = false;
             }
             if (!title) {
-                document.querySelector('.error-div').textContent = 'Please select your title';
+                errors.push('Please select your title');
                 isValid = false;
             }
-            if (!firstName || !lastName) {
-                const nameErrorDiv = document.querySelector('.error-div');
-                if (nameErrorDiv) {
-                    nameErrorDiv.textContent = 'Please enter both first and last name';
-                }
+            if (!firstName) {
+                errors.push('Please enter your first name');
                 isValid = false;
             }
-            if (!validateEmail(email)) {
-                document.querySelector('.emailError').classList.remove('hidden');
+            if (!lastName) {
+                errors.push('Please enter your last name');
                 isValid = false;
             }
-            if (!validatePhone(phone)) {
-                const phoneErrorDiv = document.querySelector('.error-div');
-                if (phoneErrorDiv) {
-                    phoneErrorDiv.textContent = 'Please enter a valid UK phone number';
-                }
+            if (!email) {
+                errors.push('Please enter your email address');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                errors.push('Please enter a valid email address');
                 isValid = false;
             }
-            if (!validateDOB(day, month, year)) {
-                const dobErrorDiv = document.querySelector('.error-checkbox');
-                if (dobErrorDiv) {
-                    dobErrorDiv.textContent = 'Please enter a valid date of birth (age 18-100)';
-                }
+            if (!phone) {
+                errors.push('Please enter your phone number');
+                isValid = false;
+            } else if (!validatePhone(phone)) {
+                errors.push('Please enter a valid UK phone number (starting with 07)');
                 isValid = false;
             }
+            if (!day || !month || !year) {
+                errors.push('Please select your complete date of birth');
+                isValid = false;
+            } else if (!validateDOB(day, month, year)) {
+                errors.push('Please enter a valid date of birth (you must be 18-100 years old)');
+                isValid = false;
+            }
+
+            // Show all errors
+            if (!isValid) {
+                showValidationErrors(errors);
+            }
+
             return isValid;
         } else if (currentTab === 2) {
             // Step 3: Terms acceptance, signature, and final submit
             let isValid = true;
-            
-            // Check required checkboxes (excluding marketing)
+            const errors = [];
+
+            // Check required checkboxes
             const requiredCheckbox = document.querySelector('.form-checkbox2');
             if (requiredCheckbox && !requiredCheckbox.checked) {
+                errors.push('Please confirm the terms and conditions');
                 isValid = false;
-                const errorDiv = requiredCheckbox.parentElement.querySelector('.error-div');
-                if (errorDiv) {
-                    errorDiv.textContent = 'Please confirm the terms and conditions';
-                    errorDiv.classList.remove('hidden');
-                }
             }
 
             // Check signature
@@ -402,39 +560,88 @@ document.addEventListener('DOMContentLoaded', function() {
             const signatureInput = document.querySelector('.hiddenInputFieldSignature');
             if (canvas && signatureInput && signaturePad) {
                 if (signaturePad.isEmpty()) {
+                    errors.push('Please provide your signature');
                     isValid = false;
-                    document.querySelector('.signatureError').classList.remove('hidden');
                 } else {
                     signatureInput.value = signaturePad.toDataURL();
-                    document.querySelector('.signatureError').classList.add('hidden');
+                    document.querySelector('.signatureError')?.classList.add('hidden');
                 }
+            } else {
+                errors.push('Please provide your signature');
+                isValid = false;
             }
 
-            // Marketing checkbox is optional
-            const marketingInput = document.querySelector('input[type="checkbox"].form-checkbox');
-            if (!marketingInput || !marketingInput.checked) {
-                marketingInput?.focus();
-                isValid = false;
+            // Show all errors
+            if (!isValid) {
+                showValidationErrors(errors);
             }
-            // Terms consent checkbox
-            const termsInput = document.querySelector('input[type="checkbox"].form-checkbox2');
-            if (!termsInput || !termsInput.checked) {
-                termsInput?.focus();
-                isValid = false;
-            }
-            // Signature
-            const signatureBase64 = document.querySelector('.hiddenInputFieldSignature')?.value || '';
-            if (!signatureBase64 || signatureBase64.length < 100) {
-                document.querySelector('.signatureError').classList.remove('hidden');
-                isValid = false;
-            }
+
             return isValid;
         }
         return false;
     }
 
+    // Function to clear all error messages
+    function clearAllErrorMessages() {
+        // Clear address errors
+        if (selectedAddressError) selectedAddressError.classList.add('hidden');
+        const prevAddressError = document.querySelector('.prevselectedAddressError');
+        if (prevAddressError) prevAddressError.classList.add('hidden');
+
+        // Clear email error
+        const emailError = document.querySelector('.emailError');
+        if (emailError) emailError.classList.add('hidden');
+
+        // Clear signature error
+        const signatureError = document.querySelector('.signatureError');
+        if (signatureError) signatureError.classList.add('hidden');
+
+        // Clear all error divs
+        document.querySelectorAll('.error-div').forEach(div => {
+            div.textContent = '';
+            div.classList.add('hidden');
+        });
+
+        document.querySelectorAll('.error-checkbox').forEach(div => {
+            div.textContent = '';
+            div.classList.add('hidden');
+        });
+    }
+
+    // Function to show validation errors
+    function showValidationErrors(errors) {
+        if (errors.length === 0) return;
+
+        // Create or update error message container
+        let errorContainer = document.getElementById('validation-errors');
+        if (!errorContainer) {
+            errorContainer = document.createElement('div');
+            errorContainer.id = 'validation-errors';
+            errorContainer.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+            errorContainer.style.marginTop = '10px';
+
+            // Insert after the form
+            const form = document.getElementById('dealform');
+            if (form) {
+                form.insertBefore(errorContainer, form.firstChild);
+            }
+        }
+
+        // Show errors
+        errorContainer.innerHTML = `
+            <strong>Please fix the following errors:</strong>
+            <ul class="mt-2 list-disc list-inside">
+                ${errors.map(error => `<li>${error}</li>`).join('')}
+            </ul>
+        `;
+        errorContainer.classList.remove('hidden');
+
+        // Scroll to error message
+        errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     // Show initial form when "Find My Agreements" is clicked
-    firstButton.addEventListener('click', function() {
+    firstButton.addEventListener('click', function () {
         document.getElementById('formdiv').classList.remove('hidden');
         firstButton.classList.add('hidden');
         // Hide continue button initially until address is selected
@@ -442,13 +649,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Set the landing time when the page loads
-    const landingTime = new Date().toLocaleString('en-GB', { 
+    const landingTime = new Date().toLocaleString('en-GB', {
         timeZone: 'Europe/London',
-        hour12: false 
+        hour12: false
     });
     document.querySelector('.landing_time').value = landingTime;
 
-        // Postcode lookup functionality
+    // Postcode lookup functionality
     function handlePostcodeLookup(postcode, propertyDivSelector, propertySelector, spinnerSelector) {
         if (!postcode || postcode.length < 5) return; // Don't search for very short postcodes
 
@@ -459,7 +666,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         spinner.classList.remove('hidden');
         nextStep.classList.add('hidden');
-        
+
         // API configuration
         const apiKey = "Mu2P8Fp9G0W8ZKNwTo44IQ25787";
         const url = `https://api.getaddress.io/find/${postcode}?api-key=${apiKey}&expand=true`;
@@ -469,22 +676,21 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 spinner.classList.add('hidden');
                 propertyDiv.classList.remove('hidden');
-                
+
                 // Clear previous options
                 propertyContainer.innerHTML = '';
-                
+
                 // Add default option
                 const defaultOption = document.createElement('a');
                 defaultOption.value = '';
-                // defaultOption.textContent = 'Select your address';
                 propertyContainer.appendChild(defaultOption);
-                
+
                 // Add address options
                 if (data.addresses && data.addresses.length > 0) {
                     data.addresses.forEach((address) => {
                         const option = document.createElement('a');
                         option.href = '#';
-                        
+
                         // Format address parts
                         const addressParts = [
                             address.line_1,
@@ -496,10 +702,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             address.county,
                             postcode.toUpperCase()
                         ].filter(Boolean); // Remove empty values
-                        
+
                         // Create formatted address
                         const formattedAddress = addressParts.join(', ');
-                        
+
                         // Add data attributes
                         option.className = 'address-link';
                         option.setAttribute('data-fulladdress', formattedAddress);
@@ -508,11 +714,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         option.setAttribute('data-province', address.county || '');
                         option.setAttribute('data-building', address.building_number || address.building_name || '');
                         option.setAttribute('data-pxl', '_n' + Math.floor(Math.random() * 1000));
-                        
+
                         option.textContent = formattedAddress;
                         propertyContainer.appendChild(option);
                     });
-                    
+
                     // Style the select container
                     propertyContainer.className = 'property';
                 }
@@ -525,7 +731,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Current address postcode input handling
-    document.getElementById('postcode').addEventListener('input', function(e) {
+    document.getElementById('postcode').addEventListener('input', function (e) {
         const postcode = e.target.value.trim();
         if (postcode && postcode.length >= 5) {
             handlePostcodeLookup(postcode, '.propertyDiv', '#property', '.spinner-border');
@@ -533,7 +739,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle Find button click for current address
-    postcodeBtn.addEventListener('click', function() {
+    postcodeBtn.addEventListener('click', function () {
         const postcode = document.getElementById('postcode').value.trim();
         if (postcode) {
             handlePostcodeLookup(postcode, '.propertyDiv', '#property', '.spinner-border');
@@ -541,17 +747,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle current address selection
-    document.getElementById('property').addEventListener('click', function(e) {
+    document.getElementById('property').addEventListener('click', function (e) {
         e.preventDefault();
         if (e.target.classList.contains('address-link')) {
             const selectedValue = e.target.getAttribute('data-fulladdress');
             const nextStep = document.querySelector('.nextStep');
-            
+
             if (selectedValue) {
                 selectedDiv.classList.remove('hidden');
                 selectedDiv.style.display = 'block';
                 selectedDiv.setAttribute('data-pxl', '_n108');
-                
+
                 // Update the heading
                 const heading = selectedDiv.querySelector('h4');
                 if (!heading) {
@@ -561,24 +767,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     h4.textContent = 'Selected Address';
                     selectedDiv.insertBefore(h4, selectedDiv.firstChild);
                 }
-                
+
                 // Update selected address
                 selectedAddress.className = 'selectedAddress text-left text-sm';
                 selectedAddress.setAttribute('data-pxl', '_n110');
                 selectedAddress.textContent = selectedValue;
-                
+
                 // Update error message styling
                 selectedAddressError.className = 'selectedAddressError text-red-400 text-sm hidden';
                 selectedAddressError.setAttribute('data-pxl', '_n111');
                 selectedAddressError.textContent = 'Please select your Address';
-                
+
                 formData.currentAddress = selectedValue;
-                
+
                 // Show and update continue button
                 nextStep.classList.remove('hidden');
                 nextStep.textContent = 'Continue';
                 nextStep.classList.add("nextStep", "bg-accent2", "text-xl", "w-auto", "px-10", "text-center", "py-4", "rounded-lg", "font-bold", "text-white");
-                
+
                 // Hide the address options after selection
                 propertyDiv.classList.add('hidden');
             } else {
@@ -588,29 +794,29 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Previous address handling
-    addAddressBtn.addEventListener('click', function() {
+    addAddressBtn.addEventListener('click', function () {
         prevAddressDiv.classList.remove('hidden');
         removeAddressBtn.classList.remove('hidden');
         addAddressBtn.classList.add('hidden');
     });
 
-    removeAddressBtn.addEventListener('click', function() {
+    removeAddressBtn.addEventListener('click', function () {
         prevAddressDiv.classList.add('hidden');
         removeAddressBtn.classList.add('hidden');
         addAddressBtn.classList.remove('hidden');
-        
+
         // Clear previous address data
         document.getElementById('prevpostcode').value = '';
         document.querySelector('.prevproperty').innerHTML = '';
         document.querySelector('.prevselectedAddress').textContent = '';
         formData.previousAddress = '';
-        
+
         prevPropertyDiv.classList.add('hidden');
         prevSelectedDiv.classList.add('hidden');
     });
 
     // Previous address postcode lookup
-    prevPostcodeBtn.addEventListener('click', function() {
+    prevPostcodeBtn.addEventListener('click', function () {
         const prevPostcode = document.getElementById('prevpostcode').value.trim();
         if (prevPostcode) {
             handlePostcodeLookup(prevPostcode, '.prevpropertyDiv', '#prevproperty', '.spinner-border2');
@@ -618,7 +824,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle previous address selection
-    document.getElementById('prevproperty').addEventListener('change', function(e) {
+    document.getElementById('prevproperty').addEventListener('change', function (e) {
         const selectedValue = e.target.value;
         if (selectedValue) {
             prevSelectedDiv.classList.remove('hidden');
@@ -629,25 +835,25 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Send step-2 data to webhook via server proxy to avoid CORS issues
-    async function sendStep2Webhook(firstName, lastName, phone, email) {
+    async function sendStep2Webhook(firstName, lastName, phone, email, token) {
         try {
             // Generate a more complex unique token for each submission (letters, numbers, special chars)
-            function generateComplexToken(length = 32) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                let token = 'rf_';
-                for (let i = 0; i < length; i++) {
-                    token += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return token;
-            }
-            const token = generateComplexToken();
+            // function generateComplexToken(length = 32) {
+            //     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            //     let token = 'rf_';
+            //     for (let i = 0; i < length; i++) {
+            //         token += chars.charAt(Math.floor(Math.random() * chars.length));
+            //     }
+            //     return token;
+            // }
+            // const token = generateComplexToken();
 
             const payload = {
                 firstName: firstName || '',
                 lastName: lastName || '',
                 phoneNumber: phone || '',
                 Email: email || '',
-                Link: `https://reclaimsfinance.co.uk/?token=${encodeURIComponent(token)}`
+                Link: `https://reclaimsfinance.co.uk/v1/?token=${encodeURIComponent(token)}`
             };
 
             // Send to local PHP proxy which will forward to the real webhook
@@ -673,11 +879,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Next/Previous buttons
-    nextStep.addEventListener('click', async function() {
-        console.log('Next button clicked, current tab:', currentTab);
-        
+    nextStep.addEventListener('click', async function () {
         if (!validateCurrentStep()) {
-            console.log('Validation failed, stopping submission');
             return false;
         }
 
@@ -691,13 +894,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (currentTab === 1) {
             // Get form values safely with error checking
             const titleEl = document.querySelector('input[name="title"]:checked');
-            const firstNameEl = document.querySelector('input[name="firstName"]');
-            const lastNameEl = document.querySelector('input[name="lastName"]');
-            const phoneEl = document.querySelector('input[name="phoneNumber"]'); // Fixed phone field name
-            const emailEl = document.querySelector('input[name="email"]');
+            const firstNameEl = document.getElementById('first-name');
+            const lastNameEl = document.getElementById('last-name');
+            const phoneEl = document.getElementById('phone');
+            const emailEl = document.getElementById('email');
             const postcodeEl = document.getElementById('postcode');
             const ivaEl = document.querySelector('input[name="iva"]:checked');
-            
+
             // Validate required fields (excluding previousName as it's optional)
             if (!titleEl) {
                 alert('Please select your title');
@@ -736,21 +939,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const email = emailEl.value.trim();
             const postcode = postcodeEl.value.trim();
             const iva = ivaEl.value;
-            
+
+            // Get date of birth
+            const day = document.getElementById('dayOfBirth')?.value || '';
+            const month = document.getElementById('monthOfBirth')?.value || '';
+            const year = document.getElementById('yearOfBirth')?.value || '';
+            const dateOfBirth = day && month && year ? `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}` : '';
+
             // Previous name is optional
             const previousNameEl = document.querySelector('input[name="previousName"]');
             const previousName = previousNameEl ? previousNameEl.value.trim() : '';
-            
+
             // Get address from selected address display
             const address = selectedAddress ? selectedAddress.textContent.trim() : '';
 
             // First send webhook
-            try {
-                await sendStep2Webhook(firstName, lastName, phone, email);
-            } catch (error) {
-                console.error('Webhook error:', error);
-                // Continue even if webhook fails
-            }
+
 
             // Then save data and get unique link
             try {
@@ -758,30 +962,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 loaderDiv.classList.remove('hidden');
                 dealForm.classList.add('hidden');
 
-                // Log form field values
-                console.log('Form Fields:', {
-                    firstName,
-                    lastName,
-                    phone,
-                    email,
-                    postcode,
-                    address,
-                    title,
-                    previousName
-                });
-
                 const formData = {
                     firstName,
                     lastName,
+                    iva,
                     phoneNumber: phone, // Match the field name from the form
                     email,
                     postcode,
                     address,
                     title,
-                    previousName
+                    previousName,
+                    dateOfBirth
                 };
-
-                console.log('Submitting data:', formData);
 
                 const response = await fetch('save-step2.php', {
                     method: 'POST',
@@ -794,15 +986,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 let responseText;
                 try {
                     responseText = await response.text();
-                    console.log('Raw server response:', responseText);
-                    
+                    console.log("Raw response Text:", responseText);
+                    const parsedResponse = JSON.parse(responseText)
+                    const token = await parsedResponse.token;
+                    try {
+                        await sendStep2Webhook(firstName, lastName, phone, email, token);
+                    } catch (error) {
+                        console.error('Webhook error:', error);
+                        // Continue even if webhook fails
+                    }
+
+                    // Check if response is empty or not JSON
+                    if (!responseText || responseText.trim() === '') {
+                        throw new Error('Server returned empty response');
+                    }
+
                     // Try to parse as JSON
                     let result;
                     try {
                         result = JSON.parse(responseText);
                     } catch (parseError) {
                         console.error('Failed to parse JSON response:', parseError);
-                        throw new Error('Server returned invalid JSON. Please check server logs.');
+                        console.error('Response was:', responseText);
+                        throw new Error('Server returned invalid JSON: ' + responseText.substring(0, 100) + '...');
                     }
 
                     if (!response.ok) {
@@ -818,32 +1024,32 @@ document.addEventListener('DOMContentLoaded', function() {
                         // Hide loader and show form
                         loaderDiv.classList.add('hidden');
                         dealForm.classList.remove('hidden');
-                        
+
                         // Move to step 3
                         currentTab = 2;
                         showTab(currentTab);
-                        
+
                         // Initialize signature pad
                         const canvas = document.getElementById('signature-pad');
                         if (canvas) {
                             // Clear any existing content
                             const ctx = canvas.getContext('2d');
                             ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            
+
                             // Setup canvas for signature
                             canvas.width = canvas.offsetWidth;
                             canvas.height = canvas.offsetHeight;
                             canvas.style.backgroundColor = 'rgb(255, 255, 255)';
-                            
+
                             // Initialize the signature pad
                             const clearButton = document.querySelector('[data-action="click->new-form#clearSignature"]');
                             if (clearButton) {
-                                clearButton.onclick = function() {
+                                clearButton.onclick = function () {
                                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                                 };
                             }
                         }
-                        
+
                         return result;
                     } else {
                         throw new Error(result.error || 'Failed to save data');
@@ -857,7 +1063,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Hide loader and show form again on error
                 loaderDiv.classList.add('hidden');
                 dealForm.classList.remove('hidden');
-                
+
                 // More user-friendly error message
                 let errorMessage = 'An error occurred while saving your data. ';
                 if (error.message.includes('Server returned invalid JSON')) {
@@ -865,29 +1071,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     errorMessage += error.message;
                 }
-                
+
                 alert(errorMessage);
                 return;
-            }
-        }
-
-        // If on step 2 (index 1) send webhook data before moving on
-        if (currentTab === 1) {
-            try {
-                const firstName = document.getElementById('first-name')?.value || '';
-                const lastName = document.getElementById('last-name')?.value || '';
-                const email = document.getElementById('email')?.value || '';
-                const phone = document.getElementById('phone')?.value || '';
-
-                // Fire-and-forget but wait for the proxy response so we can log failures.
-                const webhookResult = await sendStep2Webhook(firstName, lastName, phone, email);
-                if (webhookResult && webhookResult.ok) {
-                    console.log('Step 2 webhook sent successfully', webhookResult.data);
-                } else {
-                    console.warn('Step 2 webhook failed or returned error', webhookResult);
-                }
-            } catch (err) {
-                console.error('Unexpected error while sending step2 webhook', err);
             }
         }
 
@@ -896,7 +1082,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showTab(currentTab);
     });
 
-    backStep.addEventListener('click', function() {
+    backStep.addEventListener('click', function () {
         if (currentTab > 0) {
             currentTab--;
             showTab(currentTab);
@@ -904,14 +1090,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Clear validation errors when inputs change
-    document.querySelectorAll('input').forEach(input => {
-        input.addEventListener('input', function() {
-            const errorDiv = this.parentElement.querySelector('.error-div');
-            if (errorDiv) {
-                errorDiv.textContent = '';
-            }
+    document.querySelectorAll('input, select').forEach(input => {
+        input.addEventListener('input', function () {
+            clearValidationErrors();
+        });
+        input.addEventListener('change', function () {
+            clearValidationErrors();
         });
     });
+
+    // Function to clear validation error container
+    function clearValidationErrors() {
+        const errorContainer = document.getElementById('validation-errors');
+        if (errorContainer) {
+            errorContainer.classList.add('hidden');
+        }
+    }
 
     // --- Signature Pad Functionality ---
     const signatureCanvas = document.getElementById('signature-pad');
@@ -937,7 +1131,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Clear button functionality
-        clearSignatureBtn.addEventListener('click', function() {
+        clearSignatureBtn.addEventListener('click', function () {
             signaturePad.clear();
             signatureInput.value = '';
             document.querySelector('.signatureError')?.classList.add('hidden');
@@ -948,14 +1142,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Save signature to hidden input
             const signatureData = signaturePad.toDataURL('image/png');
             signatureInput.value = signatureData;
-            
+
             // Set signature time
-            const signatureTime = new Date().toLocaleString('en-GB', { 
+            const signatureTime = new Date().toLocaleString('en-GB', {
                 timeZone: 'Europe/London',
-                hour12: false 
+                hour12: false
             });
             document.getElementById('signature_time').value = signatureTime;
-            
+
             // Hide error message if signature exists
             if (!signaturePad.isEmpty()) {
                 document.querySelector('.signatureError')?.classList.add('hidden');
@@ -966,11 +1160,11 @@ document.addEventListener('DOMContentLoaded', function() {
         window.addEventListener('resize', () => {
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
             const data = signaturePad.toData();
-            
+
             signatureCanvas.width = signatureCanvas.offsetWidth * ratio;
             signatureCanvas.height = signatureCanvas.offsetHeight * ratio;
             signatureCanvas.getContext("2d").scale(ratio, ratio);
-            
+
             signaturePad.clear();
             if (data) {
                 signaturePad.fromData(data);
@@ -978,7 +1172,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Test function to verify signature (for debugging)
-        window.testSignature = function() {
+        window.testSignature = function () {
             const testData = signaturePad.toDataURL('image/png');
             return !signaturePad.isEmpty() && testData.startsWith('data:image/png;base64,');
         };

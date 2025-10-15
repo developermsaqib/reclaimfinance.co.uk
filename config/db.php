@@ -1,8 +1,9 @@
 <?php
+// For local development with XAMPP
 $host = 'sdb-c.hosting.stackcp.net';
 $dbname = 'reclaims_finance-31373147c8';
-$username = 'root';  // Replace with your database username
-$password = 'hwf7etr8p8';      // Replace with your database password
+$username = 'root';
+$password = 'hwf7etr8p8';
 
 try {
     $conn = new mysqli($host, $username, $password, $dbname);

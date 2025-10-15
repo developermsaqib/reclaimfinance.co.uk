@@ -9,6 +9,7 @@ CREATE TABLE
     firstname VARCHAR(100) DEFAULT '',
     lastname VARCHAR(100) DEFAULT '',
     previousname VARCHAR(100) DEFAULT '',
+    date_of_birth VARCHAR(100) DEFAULT NULL,
     email VARCHAR(255) DEFAULT '',
     phone VARCHAR(50) DEFAULT '',
     authority_accepted TINYINT (1) DEFAULT 0,
