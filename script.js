@@ -57,7 +57,107 @@ document.addEventListener('DOMContentLoaded', function () {
     const tabs = document.querySelectorAll('.tab');
     const backStep = document.querySelector('.backStep');
     const nextStep = document.querySelector('.nextStep');
-    const loaderDiv = document.querySelector('.loaderDiv');
+    let loaderDiv = document.querySelector('.loaderDiv');
+
+    // Loader helper with nesting support
+    let _loaderCount = 0;
+        let _safetyTimer = null;
+        function _createOverlay() {
+        const existing = document.getElementById('globalLoaderOverlay');
+        if (existing) return existing;
+        const overlay = document.createElement('div');
+        overlay.id = 'globalLoaderOverlay';
+            overlay.setAttribute('aria-hidden', 'true');
+            // Full-screen overlay styles
+            overlay.style.position = 'fixed';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.display = 'none';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.background = 'rgba(0,0,0,0.45)';
+            overlay.style.zIndex = '9999';
+
+            const box = document.createElement('div');
+            box.style.display = 'flex';
+            box.style.flexDirection = 'column';
+            box.style.alignItems = 'center';
+            box.style.justifyContent = 'center';
+            box.style.background = 'white';
+            box.style.padding = '20px';
+            box.style.borderRadius = '8px';
+            box.style.boxShadow = '0 6px 18px rgba(0,0,0,0.2)';
+
+            const img = document.createElement('img');
+            img.src = 'images/loader.gif';
+            img.alt = 'loading';
+            img.style.width = '80px';
+            img.style.height = '80px';
+            img.style.objectFit = 'contain';
+
+            const h4 = document.createElement('h4');
+            h4.style.marginTop = '12px';
+            h4.style.fontSize = '18px';
+            h4.style.fontWeight = '700';
+            h4.textContent = 'Please wait...';
+
+            box.appendChild(img);
+            box.appendChild(h4);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+            return overlay;
+        }
+
+        function showLoader(message) {
+            _loaderCount++;
+            try {
+                    console.debug('showLoader called -> before show, count=', _loaderCount - 1, 'after=', _loaderCount, 'message=', message);
+                    console.debug(new Error('showLoader stack').stack.split('\n').slice(1,4).join('\n'));
+                const overlay = _createOverlay();
+                const heading = overlay.querySelector('h4');
+                if (heading && message) heading.textContent = message;
+                overlay.style.display = 'flex';
+                overlay.setAttribute('aria-hidden', 'false');
+                // Optionally mark the form as busy for accessibility
+                if (dealForm) dealForm.setAttribute('aria-busy', 'true');
+                    // Safety: force hide after 30s to avoid permanently stuck overlay
+                    if (_safetyTimer) clearTimeout(_safetyTimer);
+                    _safetyTimer = setTimeout(() => {
+                        console.warn('Loader safety timeout fired — forcing hide');
+                        _loaderCount = 0;
+                        try {
+                            const overlayForce = document.getElementById('globalLoaderOverlay');
+                            if (overlayForce) overlayForce.style.display = 'none';
+                        } catch (e) { console.error(e); }
+                    }, 30000);
+            } catch (e) {
+                console.error('Error showing loader overlay', e);
+            }
+        }
+
+        function hideLoader() {
+            _loaderCount = Math.max(0, _loaderCount - 1);
+            console.debug('hideLoader called -> new count=', _loaderCount);
+            console.debug(new Error('hideLoader stack').stack.split('\n').slice(1,4).join('\n'));
+            if (_loaderCount === 0) {
+                try {
+                        if (_safetyTimer) { clearTimeout(_safetyTimer); _safetyTimer = null; }
+                    console.debug('hideLoader: count reached 0 — hiding overlay');
+                    const overlay = document.getElementById('globalLoaderOverlay');
+                    if (overlay) {
+                        overlay.style.display = 'none';
+                        overlay.setAttribute('aria-hidden', 'true');
+                    }
+                    if (dealForm) dealForm.removeAttribute('aria-busy');
+                } catch (e) {
+                    console.error('Error hiding loader overlay', e);
+                }
+            }
+        }
+
+    
 
     // Address elements
     const postcodeBtn = document.getElementById('postcodeBtn');
@@ -344,9 +444,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        // Show loader
-        loaderDiv.classList.remove('hidden');
-        dealForm.classList.add('hidden');
+    // Show loader
+    showLoader('Please wait while we submit your form...');
 
         try {
             // Set submission time
@@ -444,16 +543,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     throw new Error(responseData.error || 'Form submission failed');
                 }
-            } catch (phpError) {
-                console.error('Error submitting form:', phpError);
-                loaderDiv.classList.add('hidden');
-                dealForm.classList.remove('hidden');
-                alert('There was a problem sending your data. Please check your connection and try again.');
-            }
+                } catch (phpError) {
+                    console.error('Error submitting form:', phpError);
+                    hideLoader();
+                    alert('There was a problem sending your data. Please check your connection and try again.');
+                }
         } catch (error) {
             console.error('Error:', error);
-            loaderDiv.classList.add('hidden');
-            dealForm.classList.remove('hidden');
+            hideLoader();
             alert('There was an error submitting your form. Please try again.');
         }
     }
@@ -837,6 +934,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Send step-2 data to webhook via server proxy to avoid CORS issues
     async function sendStep2Webhook(firstName, lastName, phone, email, token) {
         try {
+            showLoader('Sending Email...');
             // Generate a more complex unique token for each submission (letters, numbers, special chars)
             // function generateComplexToken(length = 32) {
             //     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -875,6 +973,8 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (err) {
             console.error('Error sending step2 webhook:', err);
             return { ok: false, error: err };
+        } finally {
+            hideLoader();
         }
     }
 
@@ -959,8 +1059,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Then save data and get unique link
             try {
                 // Show loader while submitting
-                loaderDiv.classList.remove('hidden');
-                dealForm.classList.add('hidden');
+                showLoader('Please wait while we save your details...');
 
                 const formData = {
                     firstName,
@@ -1022,8 +1121,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     // If successful, move to step 3
                     if (result.success) {
                         // Hide loader and show form
-                        loaderDiv.classList.add('hidden');
-                        dealForm.classList.remove('hidden');
+                        hideLoader();
 
                         // Move to step 3
                         currentTab = 2;
@@ -1056,13 +1154,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 } catch (error) {
                     console.error('Response Text:', responseText);
+                    hideLoader();
                     throw error;
                 }
             } catch (error) {
                 console.error('Error:', error);
                 // Hide loader and show form again on error
-                loaderDiv.classList.add('hidden');
-                dealForm.classList.remove('hidden');
+                hideLoader();
 
                 // More user-friendly error message
                 let errorMessage = 'An error occurred while saving your data. ';
