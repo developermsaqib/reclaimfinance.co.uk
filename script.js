@@ -992,6 +992,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // If on step 2 (index 1), save data and send webhook before moving to step 3
         if (currentTab === 1) {
+            // Check if we already have a token in the URL
+            const urlToken = new URLSearchParams(window.location.search).get('token');
+            console.log("URL TOKEN: ", typeof(urlToken));
+            if (urlToken !== "null") {
+                // Skip API calls if token exists, move directly to step 3
+                currentTab = 2;
+                showTab(currentTab);
+                return;
+            }
+            
             // Get form values safely with error checking
             const titleEl = document.querySelector('input[name="title"]:checked');
             const firstNameEl = document.getElementById('first-name');
