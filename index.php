@@ -47,8 +47,8 @@
      <div id="header"></div>
 
      <main>
-         <div class="container-fluid g-0 ">
-            <iframe id="formFrame" src="" type="html/text" width="100%" style="height: 100vh; border: none;" frameBorder="0">
+         <div class="container-fluid g-0 " style="height: 480px;">
+            <iframe id="formFrame" src="" type="html/text" width="100%" style=" box-sizing: border-box; height: 480px; border: none;" frameBorder="0">
 
             </iframe>
              <script>
